@@ -4,7 +4,6 @@ import { FormEvent, useState } from "react";
 import { Bell, Download, RotateCcw, Shield, UserRound } from "lucide-react";
 import { useCare } from "@/components/care-provider";
 import { careTopics } from "@/lib/demo-data";
-import type { EncouragementPreference } from "@/lib/types";
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetPreview } = useCare();
@@ -44,7 +43,7 @@ export default function SettingsPage() {
         </div>
         <form className="form-stack" onSubmit={saveProfile}>
           <label>
-            CareTogether name
+            CareTogether ID
             <input
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
@@ -108,21 +107,6 @@ export default function SettingsPage() {
               }
             />
           </label>
-          <label>
-            Encouragement style
-            <select
-              value={settings.encouragementPreference}
-              onChange={(event) =>
-                updateSettings({
-                  encouragementPreference: event.target
-                    .value as EncouragementPreference,
-                })
-              }
-            >
-              <option value="secular">Everyday reflection</option>
-              <option value="spiritual">Spiritual, not religious</option>
-            </select>
-          </label>
         </div>
       </section>
 
@@ -144,11 +128,11 @@ export default function SettingsPage() {
             type="button"
             onClick={() => {
               resetPreview();
-              setDisplayName("Quiet Lantern");
+              setDisplayName("hiyoglow");
             }}
           >
             <RotateCcw size={17} aria-hidden="true" />
-            Reset private preview
+            Reset app
           </button>
         </div>
       </section>

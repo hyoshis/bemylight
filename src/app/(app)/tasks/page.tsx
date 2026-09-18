@@ -1,201 +1,165 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import {
-  Check,
-  Circle,
-  GripVertical,
-  Leaf,
-  ListTodo,
-  Plus,
-  Star,
-} from "lucide-react";
+import { Check, Circle, Plus, Star, Target } from "lucide-react";
 import { useCare } from "@/components/care-provider";
-import { DAILY_FOCUS_LIMIT, getFocusTasks } from "@/lib/task-utils";
-import type { TaskCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-const categories: TaskCategory[] = [
-  "care",
-  "appointment",
-  "paperwork",
-  "household",
-  "self-care",
-];
 
 export default function TasksPage() {
   const { tasks, addTask, toggleTask, toggleTaskFocus } = useCare();
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<TaskCategory>("care");
-  const focusTasks = getFocusTasks(tasks);
-  const backlog = tasks.filter((task) => !task.inFocus && !task.completed);
-  const completed = tasks.filter((task) => task.completed);
+  const [activeTab, setActiveTab] = useState<"tasks" | "completed">("tasks");
+  const activeTasks = [...tasks]
+    .filter((task) => !task.completed)
+    .sort((first, second) => Number(second.inFocus) - Number(first.inFocus));
+  const completedTasks = tasks.filter((task) => task.completed);
 
   function submitTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const cleanTitle = title.trim();
     if (!cleanTitle) return;
-    addTask(cleanTitle, category);
+    addTask(cleanTitle);
     setTitle("");
+    setActiveTab("tasks");
   }
 
   return (
     <div className="page-stack narrow-page">
-      <header className="page-header">
+      <header className="focus-guidance-header">
         <div>
-          <p className="eyebrow">One thing at a time</p>
-          <h1>My focus</h1>
+          <p className="eyebrow">My focus</p>
+          <h1>Focus on what you can control.</h1>
           <p>
-            Keep today small. Choose up to three actions that feel possible.
+            Things can feel overwhelming. Start with one step you can take now,
+            then star what needs your attention first.
           </p>
         </div>
+        <span className="focus-guidance-icon" aria-hidden="true">
+          <Target size={27} />
+        </span>
       </header>
 
-      <form className="quick-add" onSubmit={submitTask}>
+      <form className="quick-add task-quick-add" onSubmit={submitTask}>
         <label className="sr-only" htmlFor="new-task">
           New task
         </label>
-        <Plus size={19} aria-hidden="true" />
         <input
           id="new-task"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          placeholder="What is one small thing you can do?"
+          placeholder="What can you take care of now?"
           maxLength={120}
         />
-        <label className="sr-only" htmlFor="task-category">
-          Category
-        </label>
-        <select
-          id="task-category"
-          value={category}
-          onChange={(event) => setCategory(event.target.value as TaskCategory)}
+        <button
+          className="icon-button task-add-button"
+          type="submit"
+          aria-label="Add task"
         >
-          {categories.map((item) => (
-            <option key={item} value={item}>
-              {item.replace("-", " ")}
-            </option>
-          ))}
-        </select>
-        <button className="button button-primary button-small" type="submit">
-          Add
+          <Plus size={19} aria-hidden="true" />
         </button>
       </form>
 
-      <section className="panel">
-        <div className="section-heading-row">
-          <div>
-            <p className="muted-label">Today</p>
-            <h2>Your three small steps</h2>
-          </div>
-          <span className="progress-pill">
-            {focusTasks.length} / {DAILY_FOCUS_LIMIT} chosen
-          </span>
+      <section className="panel task-panel">
+        <div className="task-tabs" role="tablist" aria-label="Task lists">
+          <button
+            className={cn(activeTab === "tasks" && "is-active")}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "tasks"}
+            onClick={() => setActiveTab("tasks")}
+          >
+            Tasks <span>{activeTasks.length}</span>
+          </button>
+          <button
+            className={cn(activeTab === "completed" && "is-active")}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "completed"}
+            onClick={() => setActiveTab("completed")}
+          >
+            Completed <span>{completedTasks.length}</span>
+          </button>
         </div>
-        <div className="task-list">
-          {focusTasks.map((task) => (
-            <div className={cn("task-row", task.completed && "is-done")} key={task.id}>
-              <GripVertical className="drag-hint" size={18} aria-hidden="true" />
-              <button
-                className="task-toggle"
-                type="button"
-                onClick={() => toggleTask(task.id)}
-                aria-label={
-                  task.completed
-                    ? `Mark ${task.title} incomplete`
-                    : `Complete ${task.title}`
-                }
-              >
-                {task.completed ? <Check size={16} /> : <Circle size={18} />}
-              </button>
-              <div className="task-copy">
-                <strong>{task.title}</strong>
-                <small>
-                  {task.category.replace("-", " ")}
-                  {task.dueLabel ? ` · ${task.dueLabel}` : ""}
-                </small>
-              </div>
-              <button
-                className="icon-button"
-                type="button"
-                onClick={() => toggleTaskFocus(task.id)}
-                aria-label={`Move ${task.title} to the backlog`}
-              >
-                <Star size={17} fill="currentColor" />
-              </button>
-            </div>
-          ))}
-        </div>
-        {focusTasks.length === 0 ? (
-          <div className="empty-state">
-            <Leaf size={28} aria-hidden="true" />
-            <h3>Today can begin with one small thing.</h3>
-            <p>Choose an item from your backlog when you are ready.</p>
-          </div>
-        ) : null}
-      </section>
 
-      <section className="panel">
-        <div className="section-heading-row">
-          <div>
-            <p className="muted-label">Not for right now</p>
-            <h2>Your backlog</h2>
-          </div>
-          <ListTodo size={22} aria-hidden="true" />
-        </div>
-        <div className="task-list">
-          {backlog.map((task) => {
-            const focusIsFull = focusTasks.length >= DAILY_FOCUS_LIMIT;
-            return (
+        {activeTab === "tasks" ? (
+          <div className="task-list unified-task-list" role="tabpanel">
+            {activeTasks.map((task) => (
               <div className="task-row" key={task.id}>
-                <span className="category-dot" data-category={task.category} />
+                <button
+                  className="task-toggle"
+                  type="button"
+                  onClick={() => toggleTask(task.id)}
+                  aria-label={`Complete ${task.title}`}
+                >
+                  <Circle size={18} />
+                </button>
                 <div className="task-copy">
                   <strong>{task.title}</strong>
-                  <small>{task.category.replace("-", " ")}</small>
+                  {task.dueLabel ? <small>{task.dueLabel}</small> : null}
                 </div>
                 <button
-                  className="button button-quiet button-small"
+                  className={cn(
+                    "icon-button",
+                    "task-star",
+                    task.inFocus && "is-starred",
+                  )}
                   type="button"
-                  disabled={focusIsFull}
-                  title={
-                    focusIsFull
-                      ? "Complete or remove a focus task first"
-                      : undefined
-                  }
                   onClick={() => toggleTaskFocus(task.id)}
+                  aria-pressed={task.inFocus}
+                  aria-label={
+                    task.inFocus
+                      ? `Remove ${task.title} from focus`
+                      : `Add ${task.title} to focus`
+                  }
                 >
-                  Add to today
+                  <Star
+                    size={18}
+                    fill={task.inFocus ? "currentColor" : "none"}
+                  />
                 </button>
               </div>
-            );
-          })}
-          {backlog.length === 0 ? (
-            <p className="empty-inline">Nothing waiting in your backlog.</p>
-          ) : null}
-        </div>
-      </section>
-
-      <details className="completed-details">
-        <summary>{completed.length} completed small steps</summary>
-        <div className="task-list">
-          {completed.map((task) => (
-            <div className="task-row is-done" key={task.id}>
-              <Check size={17} aria-hidden="true" />
-              <div className="task-copy">
-                <strong>{task.title}</strong>
-                <small>{task.category.replace("-", " ")}</small>
+            ))}
+            {activeTasks.length === 0 ? (
+              <div className="empty-state">
+                <h3>Your task list is clear.</h3>
+                <p>Add something when you are ready.</p>
               </div>
-              <button
-                className="text-button"
-                type="button"
-                onClick={() => toggleTask(task.id)}
-              >
-                Restore
-              </button>
-            </div>
-          ))}
-        </div>
-      </details>
+            ) : null}
+          </div>
+        ) : (
+          <div className="task-list unified-task-list" role="tabpanel">
+            {completedTasks.map((task) => (
+              <div className="task-row is-done" key={task.id}>
+                <button
+                  className="task-toggle"
+                  type="button"
+                  onClick={() => toggleTask(task.id)}
+                  aria-label={`Restore ${task.title}`}
+                >
+                  <Check size={16} />
+                </button>
+                <div className="task-copy">
+                  <strong>{task.title}</strong>
+                  {task.dueLabel ? <small>{task.dueLabel}</small> : null}
+                </div>
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => toggleTask(task.id)}
+                >
+                  Restore
+                </button>
+              </div>
+            ))}
+            {completedTasks.length === 0 ? (
+              <div className="empty-state">
+                <h3>No completed tasks yet.</h3>
+                <p>Checked-off tasks will appear here.</p>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

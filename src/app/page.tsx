@@ -36,7 +36,7 @@ export default function Home() {
               <ArrowRight size={18} aria-hidden="true" />
             </Link>
             <Link className="text-link" href="/home">
-              Explore a private preview
+              Explore CareTogether
             </Link>
           </div>
           <p className="privacy-note">
@@ -47,8 +47,8 @@ export default function Home() {
         <div className="hero-card" aria-label="CareTogether daily preview">
           <div className="hero-card-top">
             <div>
-              <p className="muted-label">Tuesday, September 15</p>
-              <h2>Good evening, Quiet Lantern.</h2>
+              <p className="muted-label">Thursday, September 17</p>
+              <h2>Good evening, hiyoglow.</h2>
             </div>
             <span className="soft-orb" aria-hidden="true" />
           </div>
@@ -62,9 +62,9 @@ export default function Home() {
             <div className="section-heading-row">
               <div>
                 <p className="muted-label">What matters now</p>
-                <h3>Your three small steps</h3>
+                <h3>Your focus steps</h3>
               </div>
-              <span className="progress-pill">1 of 3</span>
+              <span className="progress-pill">1 complete</span>
             </div>
             <ul className="preview-tasks">
               <li className="is-done">
@@ -101,8 +101,8 @@ export default function Home() {
           </span>
           <h2>One step at a time</h2>
           <p>
-            Turn an overwhelming list into three realistic actions you can
-            focus on today.
+            Turn an overwhelming list into the actions you choose to focus on
+            today.
           </p>
         </article>
         <article>
@@ -111,8 +111,7 @@ export default function Home() {
           </span>
           <h2>A little care for you</h2>
           <p>
-            Receive gentle secular or spiritual encouragement, always on your
-            terms and never with guilt.
+            Receive gentle encouragement on your terms and never with guilt.
           </p>
         </article>
       </section>

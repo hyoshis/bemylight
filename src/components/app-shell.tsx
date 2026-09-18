@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useCare } from "@/components/care-provider";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -27,6 +28,7 @@ const navigation = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { settings, encouragement } = useCare();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -69,12 +71,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="sidebar-bottom">
-          <Link className="wellbeing-link" href="/encouragement">
-            <Leaf size={19} aria-hidden="true" />
-            <span>
-              <strong>A moment for you</strong>
-              <small>Gentle encouragement</small>
+          <Link
+            className={cn(
+              "sidebar-reflection-card",
+              pathname.startsWith("/encouragement") && "is-active",
+            )}
+            href="/encouragement"
+            onClick={() => setMenuOpen(false)}
+          >
+            <span className="sidebar-reflection-label">
+              <Leaf size={14} aria-hidden="true" />
+              A moment for you
             </span>
+            <span className="sidebar-reflection-text">{encouragement.text}</span>
+            <span className="sidebar-reflection-action">Open reflection</span>
           </Link>
           <Link
             className={cn(
@@ -113,13 +123,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             CareTogether
           </Link>
           <Link className="avatar-small" href="/settings" aria-label="Settings">
-            QL
+            {settings.displayName.slice(0, 2)}
           </Link>
         </header>
-        <div className="preview-banner" role="status">
-          <span>Private preview</span>
-          Changes are saved only in this browser.
-        </div>
         <main id="main-content" className="app-content">
           {children}
         </main>

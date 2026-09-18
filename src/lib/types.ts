@@ -26,6 +26,7 @@ export type CarePost = {
   id: string;
   author: string;
   topic: string;
+  tags?: string[];
   body: string;
   createdAt: string;
   reactions: number;
@@ -37,7 +38,15 @@ export type Connection = {
   id: string;
   name: string;
   summary: string;
+  introduction: string;
+  interests: string[];
   sharedTopics: string[];
+  recentPosts: {
+    id: string;
+    topic: string;
+    body: string;
+    createdAt: string;
+  }[];
   status: "suggested" | "pending" | "connected";
 };
 
@@ -56,19 +65,17 @@ export type Conversation = {
   messages: CareMessage[];
 };
 
-export type EncouragementPreference = "secular" | "spiritual";
-
 export type CareSettings = {
   displayName: string;
-  encouragementPreference: EncouragementPreference;
   emailReminders: boolean;
   dailyReminderTime: string;
+  connectionLocation: "everywhere" | "zipcode";
+  connectionZipCode: string;
   topics: string[];
 };
 
 export type Encouragement = {
   id: string;
-  type: EncouragementPreference;
   text: string;
   attribution?: string;
   prompt: string;

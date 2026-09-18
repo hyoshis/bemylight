@@ -6,16 +6,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCare } from "@/components/care-provider";
 import { careTopics } from "@/lib/demo-data";
-import type { EncouragementPreference } from "@/lib/types";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { settings, updateSettings } = useCare();
   const [displayName, setDisplayName] = useState(settings.displayName);
   const [topics, setTopics] = useState<string[]>(settings.topics);
-  const [preference, setPreference] = useState<EncouragementPreference>(
-    settings.encouragementPreference,
-  );
   const [agreed, setAgreed] = useState(false);
 
   function toggleTopic(topic: string) {
@@ -32,7 +28,6 @@ export default function OnboardingPage() {
     updateSettings({
       displayName: displayName.trim(),
       topics,
-      encouragementPreference: preference,
     });
     router.push("/home");
   }
@@ -51,14 +46,14 @@ export default function OnboardingPage() {
         </div>
 
         <label>
-          Choose a community name
+          Choose a community ID
           <input
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
             maxLength={40}
             required
           />
-          <small>This is the only name other caregivers will see.</small>
+          <small>This is the only ID other caregivers will see.</small>
         </label>
 
         <fieldset>
@@ -79,38 +74,6 @@ export default function OnboardingPage() {
                 </label>
               );
             })}
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>What kind of encouragement feels right?</legend>
-          <div className="radio-card-grid">
-            <label>
-              <input
-                type="radio"
-                name="encouragement"
-                value="secular"
-                checked={preference === "secular"}
-                onChange={() => setPreference("secular")}
-              />
-              <span>
-                <strong>Everyday reflection</strong>
-                <small>Grounding, practical, and nonreligious</small>
-              </span>
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="encouragement"
-                value="spiritual"
-                checked={preference === "spiritual"}
-                onChange={() => setPreference("spiritual")}
-              />
-              <span>
-                <strong>Spiritual</strong>
-                <small>Broad, reflective, and not tied to a religion</small>
-              </span>
-            </label>
           </div>
         </fieldset>
 

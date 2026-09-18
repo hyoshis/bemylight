@@ -4,10 +4,10 @@ A calm, mobile-first support space for family caregivers.
 
 The current version is an interactive private prototype with:
 
-- A three-item daily focus list
+- A user-selected daily focus list with an unlimited backlog
 - Topic-based caregiver conversations
 - Consent-based connection requests and private messages
-- Secular or spiritual encouragement preferences
+- Gentle rotating encouragement
 - Community safety and moderation concepts
 - Installable PWA metadata
 

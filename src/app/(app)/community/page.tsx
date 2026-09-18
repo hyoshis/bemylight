@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import {
+  ChevronDown,
   Flag,
   Heart,
   MessageCircle,
@@ -11,24 +12,94 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useCare } from "@/components/care-provider";
-import { careTopics } from "@/lib/demo-data";
+import { communityTopicGroups } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
 export default function CommunityPage() {
-  const { posts, addPost, addComment, toggleReaction } = useCare();
+  const { posts, settings, addPost, addComment, toggleReaction } = useCare();
   const [draft, setDraft] = useState("");
-  const [topic, setTopic] = useState<(typeof careTopics)[number]>(
-    "New to caregiving",
-  );
+  const [selectedPostTags, setSelectedPostTags] = useState<string[]>([]);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [conditionsOpen, setConditionsOpen] = useState(false);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
+  const conditionTopics =
+    communityTopicGroups.find((group) => group.id === "health-conditions")
+      ?.topics ?? [];
+  const primaryFilters = [
+    { id: "aging-parents", label: "Aging parents", topics: ["Aging parents"] },
+    {
+      id: "long-distance",
+      label: "Long-distance care",
+      topics: ["Long-distance caregiving"],
+    },
+    {
+      id: "new-caregiving",
+      label: "New to caregiving",
+      topics: ["New to caregiving"],
+    },
+    {
+      id: "work-care",
+      label: "Balancing work and care",
+      topics: ["Balancing work and care"],
+    },
+  ];
+  const postTagOptions = [
+    ...primaryFilters.flatMap((filter) => filter.topics),
+    ...conditionTopics,
+  ];
+  const visiblePosts = posts.filter((post) => {
+    if (activeFilters.length === 0 && selectedConditions.length === 0) {
+      return true;
+    }
+
+    const selectedTopics = primaryFilters
+      .filter((filter) => activeFilters.includes(filter.id))
+      .flatMap((filter) => filter.topics);
+
+    const postTags = post.tags?.length ? post.tags : [post.topic];
+    return postTags.some((postTag) =>
+      [...selectedTopics, ...selectedConditions].includes(postTag),
+    );
+  });
+
+  function toggleFilter(filterId: string) {
+    setActiveFilters((current) =>
+      current.includes(filterId)
+        ? current.filter((item) => item !== filterId)
+        : [...current, filterId],
+    );
+    setConditionsOpen(false);
+  }
+
+  function toggleCondition(condition: string) {
+    setSelectedConditions((current) =>
+      current.includes(condition)
+        ? current.filter((item) => item !== condition)
+        : [...current, condition],
+    );
+  }
+
+  function togglePostTag(tag: string) {
+    setSelectedPostTags((current) =>
+      current.includes(tag)
+        ? current.filter((item) => item !== tag)
+        : [...current, tag],
+    );
+  }
 
   function publish(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const body = draft.trim();
     if (!body) return;
-    addPost(body, topic);
+    if (selectedPostTags.length === 0) {
+      setNotice("Choose at least one tag for your post.");
+      return;
+    }
+    addPost(body, selectedPostTags);
     setDraft("");
+    setSelectedPostTags([]);
     setNotice("Your post is now visible to the community.");
   }
 
@@ -48,7 +119,7 @@ export default function CommunityPage() {
           <h1>Community</h1>
           <p>
             Share only what feels safe. You can participate under your
-            CareTogether name.
+            CareTogether ID.
           </p>
         </div>
         <div className="safety-chip">
@@ -58,22 +129,100 @@ export default function CommunityPage() {
       </header>
 
       <div className="topic-scroller" aria-label="Community topics">
-        <button className="topic-pill is-active" type="button">
+        <button
+          className={cn(
+            "topic-pill",
+            activeFilters.length === 0 &&
+              selectedConditions.length === 0 &&
+              "is-active",
+          )}
+          type="button"
+          onClick={() => {
+            setActiveFilters([]);
+            setSelectedConditions([]);
+            setConditionsOpen(false);
+          }}
+        >
           My circles
         </button>
-        {careTopics.map((item) => (
-          <button className="topic-pill" type="button" key={item}>
-            {item}
+        {primaryFilters.map((filter) => (
+          <button
+            className={cn(
+              "topic-pill",
+              activeFilters.includes(filter.id) && "is-active",
+            )}
+            type="button"
+            key={filter.id}
+            aria-pressed={activeFilters.includes(filter.id)}
+            onClick={() => toggleFilter(filter.id)}
+          >
+            {filter.label}
           </button>
         ))}
+        <div className="condition-filter">
+          <button
+            className={cn(
+              "topic-pill",
+              "condition-filter-button",
+              selectedConditions.length > 0 && "is-active",
+            )}
+            type="button"
+            aria-expanded={conditionsOpen}
+            onClick={() => setConditionsOpen((open) => !open)}
+          >
+            Diseases & symptoms
+            {selectedConditions.length > 0 ? (
+              <span className="filter-count">{selectedConditions.length}</span>
+            ) : null}
+            <ChevronDown
+              className={cn("filter-chevron", conditionsOpen && "is-open")}
+              size={16}
+              aria-hidden="true"
+            />
+          </button>
+          {conditionsOpen ? (
+            <div className="condition-filter-menu">
+              <div>
+                <strong>Diseases & symptoms</strong>
+                <span>Choose one or more</span>
+              </div>
+              {conditionTopics.map((condition) => (
+                <label key={condition}>
+                  <input
+                    type="checkbox"
+                    checked={selectedConditions.includes(condition)}
+                    onChange={() => toggleCondition(condition)}
+                  />
+                  <span>{condition}</span>
+                </label>
+              ))}
+              <div className="condition-filter-actions">
+                <button
+                  className="text-button"
+                  type="button"
+                  onClick={() => setSelectedConditions([])}
+                >
+                  Clear
+                </button>
+                <button
+                  className="button button-primary button-small"
+                  type="button"
+                  onClick={() => setConditionsOpen(false)}
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <form className="compose-card" onSubmit={publish}>
         <div className="compose-heading">
-          <span className="avatar">QL</span>
+          <span className="avatar">{settings.displayName.slice(0, 2)}</span>
           <div>
             <strong>Share with people who get it</strong>
-            <small>Post as your pseudonym</small>
+            <small>Post as {settings.displayName}</small>
           </div>
         </div>
         <label className="sr-only" htmlFor="new-post">
@@ -87,20 +236,31 @@ export default function CommunityPage() {
           maxLength={1000}
           rows={3}
         />
+        <div className="post-tag-picker">
+          <p className="muted-label">Add tags</p>
+          <div className="post-tag-options">
+            {postTagOptions.map((tag) => (
+              <button
+                className={cn(
+                  "post-tag-option",
+                  selectedPostTags.includes(tag) && "is-selected",
+                )}
+                type="button"
+                key={tag}
+                aria-pressed={selectedPostTags.includes(tag)}
+                onClick={() => togglePostTag(tag)}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="compose-actions">
-          <label>
-            <span className="sr-only">Choose a topic</span>
-            <select
-              value={topic}
-              onChange={(event) =>
-                setTopic(event.target.value as (typeof careTopics)[number])
-              }
-            >
-              {careTopics.map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </select>
-          </label>
+          <span className="selected-tag-count">
+            {selectedPostTags.length > 0
+              ? `${selectedPostTags.length} selected`
+              : "Select at least one tag"}
+          </span>
           <button className="button button-primary button-small" type="submit">
             <PenLine size={16} aria-hidden="true" />
             Share
@@ -110,16 +270,14 @@ export default function CommunityPage() {
       </form>
 
       <div className="feed">
-        {posts.map((post) => (
+        {visiblePosts.map((post) => (
           <article className="post-card" key={post.id}>
             <header className="post-header">
               <div className="post-meta">
                 <span className="avatar">{post.author.slice(0, 2)}</span>
                 <div>
                   <strong>{post.author}</strong>
-                  <small>
-                    {post.topic} · {post.createdAt}
-                  </small>
+                  <small>{post.createdAt}</small>
                 </div>
               </div>
               <button
@@ -130,6 +288,13 @@ export default function CommunityPage() {
                 <MoreHorizontal size={19} />
               </button>
             </header>
+            <div className="post-tag-row">
+              {(post.tags?.length ? post.tags : [post.topic]).map((postTag) => (
+                <span className="soft-tag" key={postTag}>
+                  {postTag}
+                </span>
+              ))}
+            </div>
             <p className="post-body">{post.body}</p>
             <div className="post-actions">
               <button
@@ -176,6 +341,12 @@ export default function CommunityPage() {
                     </div>
                   </div>
                 ))}
+                {visiblePosts.length === 0 ? (
+                  <div className="panel community-empty">
+                    <h2>No posts here yet</h2>
+                    <p>Start the conversation by sharing a question or small update.</p>
+                  </div>
+                ) : null}
               </div>
             ) : null}
             <form

@@ -24,7 +24,6 @@ import type {
   Connection,
   Conversation,
   Encouragement,
-  TaskCategory,
 } from "@/lib/types";
 
 type CareState = {
@@ -38,10 +37,10 @@ type CareState = {
 
 type CareContextValue = CareState & {
   previewMode: true;
-  addTask: (title: string, category: TaskCategory) => void;
+  addTask: (title: string) => void;
   toggleTask: (id: string) => void;
   toggleTaskFocus: (id: string) => void;
-  addPost: (body: string, topic: string) => void;
+  addPost: (body: string, tags: string[]) => void;
   addComment: (postId: string, body: string) => void;
   toggleReaction: (postId: string) => void;
   requestConnection: (id: string) => void;
@@ -51,7 +50,7 @@ type CareContextValue = CareState & {
   resetPreview: () => void;
 };
 
-const STORAGE_KEY = "caretogether-preview-state";
+const STORAGE_KEY = "caretogether-preview-state-v2";
 
 function getInitialState(): CareState {
   return {
@@ -75,7 +74,76 @@ export function CareProvider({ children }: { children: ReactNode }) {
 
     if (saved) {
       try {
-        setState(JSON.parse(saved) as CareState);
+        const parsed = JSON.parse(saved) as CareState;
+        const initial = getInitialState();
+        const legacyIds: Record<string, string> = {
+          harborlight: "maria84",
+          warmmaple: "kevinj",
+          quietharbor: "nora22",
+          morningfern: "samlee",
+          softcedar: "davidk",
+          bluewindow: "jenm",
+          goldenpine: "ravi88",
+          steadyoak: "tinaq",
+          riverstone: "omar77",
+          willowpath: "lucyk",
+          kindredsky: "mattp",
+          ambertrail: "janet62",
+          calmcurrent: "alexp",
+          mossgarden: "kimberly9",
+          brightcove: "chrisw",
+          silverleaf: "meganl",
+          openmeadow: "danielc",
+          gentlewave: "sophia5",
+          northstar: "jordanr",
+          sunlit: "taylorm",
+        };
+        const migrateId = (id: string) => legacyIds[id] ?? id;
+        const migratedPosts = parsed.posts.map((post) => ({
+          ...post,
+          author: migrateId(post.author),
+          topic:
+            post.topic === "Dementia care"
+              ? "Dementia & memory loss"
+              : post.topic,
+          comments: post.comments.map((comment) => ({
+            ...comment,
+            author: migrateId(comment.author),
+          })),
+        }));
+        setState({
+          ...initial,
+          ...parsed,
+          tasks: parsed.tasks.map((task) => ({
+            ...task,
+            title: task.title.replace("sunlit", "taylorm"),
+          })),
+          posts: [
+            ...migratedPosts,
+            ...initial.posts.filter(
+              (post) =>
+                !migratedPosts.some((savedPost) => savedPost.id === post.id),
+            ),
+          ],
+          connections: initial.connections.map((connection) => ({
+            ...connection,
+            status:
+              parsed.connections.find((savedConnection) =>
+                savedConnection.id === connection.id
+              )?.status ?? connection.status,
+          })),
+          conversations: parsed.conversations.map((conversation) => ({
+            ...conversation,
+            person: migrateId(conversation.person),
+          })),
+          settings: {
+            ...initial.settings,
+            ...parsed.settings,
+            topics: parsed.settings.topics.filter(
+              (topic) => topic !== "Dementia care",
+            ),
+          },
+        });
       } catch (error) {
         console.error("Could not load the CareTogether preview state", error);
       }
@@ -94,14 +162,13 @@ export function CareProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       previewMode: true,
-      addTask(title, category) {
+      addTask(title) {
         const task: CareTask = {
           id: crypto.randomUUID(),
           title,
-          category,
+          category: "care",
           completed: false,
-          inFocus:
-            state.tasks.filter((item) => item.inFocus).length < 3,
+          inFocus: false,
           createdAt: new Date().toISOString(),
         };
         setState((current) => ({
@@ -114,7 +181,9 @@ export function CareProvider({ children }: { children: ReactNode }) {
           ...current,
           tasks: current.tasks.map((task) =>
             task.id === id
-              ? { ...task, completed: !task.completed }
+              ? task.completed
+                ? { ...task, completed: false }
+                : { ...task, completed: true, inFocus: false }
               : task,
           ),
         }));
@@ -125,14 +194,15 @@ export function CareProvider({ children }: { children: ReactNode }) {
           tasks: toggleFocusTask(current.tasks, id),
         }));
       },
-      addPost(body, topic) {
+      addPost(body, tags) {
         setState((current) => ({
           ...current,
           posts: [
             {
               id: crypto.randomUUID(),
               author: current.settings.displayName,
-              topic,
+              topic: tags[0] ?? "General",
+              tags,
               body,
               createdAt: "Just now",
               reactions: 0,
@@ -221,14 +291,13 @@ export function CareProvider({ children }: { children: ReactNode }) {
       },
       rotateEncouragement() {
         setState((current) => {
-          const eligible = encouragements.filter(
-            (item) =>
-              item.type === current.settings.encouragementPreference &&
-              item.id !== current.encouragement.id,
+          const currentIndex = encouragements.findIndex(
+            (item) => item.id === current.encouragement.id,
           );
+          const nextIndex = (currentIndex + 1) % encouragements.length;
           return {
             ...current,
-            encouragement: eligible[0] ?? current.encouragement,
+            encouragement: encouragements[nextIndex],
           };
         });
       },

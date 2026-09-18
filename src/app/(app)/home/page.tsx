@@ -2,17 +2,17 @@
 
 import Link from "next/link";
 import {
-  ArrowRight,
   Check,
   Circle,
   Heart,
   MessageCircle,
   Plus,
+  RefreshCw,
   Sparkles,
   Users,
 } from "lucide-react";
 import { useCare } from "@/components/care-provider";
-import { getFocusTasks, getTaskProgress } from "@/lib/task-utils";
+import { getFocusTasks } from "@/lib/task-utils";
 import { cn } from "@/lib/utils";
 
 export default function TodayPage() {
@@ -23,9 +23,9 @@ export default function TodayPage() {
     settings,
     encouragement,
     toggleTask,
+    rotateEncouragement,
   } = useCare();
   const focusTasks = getFocusTasks(tasks);
-  const progress = getTaskProgress(tasks);
   const connectedCount = connections.filter(
     (connection) => connection.status === "connected",
   ).length;
@@ -41,35 +41,20 @@ export default function TodayPage() {
             matters now.
           </p>
         </div>
-        <div className="header-date" aria-label="Tuesday, September 15">
-          <strong>15</strong>
+        <div className="header-date" aria-label="Thursday, September 17">
+          <strong>17</strong>
           <span>SEP</span>
         </div>
       </header>
-
-      <section className="encouragement-strip">
-        <span className="sparkle-badge" aria-hidden="true">
-          <Sparkles size={18} />
-        </span>
-        <div>
-          <p className="muted-label">A thought for today</p>
-          <blockquote>{encouragement.text}</blockquote>
-        </div>
-        <Link className="icon-button" href="/encouragement" aria-label="More encouragement">
-          <ArrowRight size={19} />
-        </Link>
-      </section>
 
       <div className="dashboard-grid">
         <section className="panel focus-panel">
           <div className="section-heading-row">
             <div>
               <p className="muted-label">What matters now</p>
-              <h2>Your small steps</h2>
+              <h2>Your focus</h2>
             </div>
-            <span className="progress-pill">
-              {progress.completed} of {progress.total}
-            </span>
+            <span className="progress-pill">{focusTasks.length} focused</span>
           </div>
 
           <div className="focus-list">
@@ -86,10 +71,7 @@ export default function TodayPage() {
                 </span>
                 <span className="task-copy">
                   <strong>{task.title}</strong>
-                  <small>
-                    {task.category.replace("-", " ")}
-                    {task.dueLabel ? ` · ${task.dueLabel}` : ""}
-                  </small>
+                  {task.dueLabel ? <small>{task.dueLabel}</small> : null}
                 </span>
               </button>
             ))}
@@ -97,29 +79,30 @@ export default function TodayPage() {
 
           <Link className="button button-secondary button-full" href="/tasks">
             <Plus size={18} aria-hidden="true" />
-            Add or choose a small step
+            Add or choose a focus item
           </Link>
         </section>
 
-        <aside className="panel check-in-panel">
-          <span className="feature-icon peach">
-            <Heart size={21} aria-hidden="true" />
-          </span>
-          <div>
-            <p className="muted-label">A moment for you</p>
-            <h2>How are you holding up?</h2>
-            <p>
-              There is no wrong answer. Even noticing how you feel is a form of
-              care.
-            </p>
+        <aside className="panel today-encouragement-panel">
+          <div className="today-encouragement-heading">
+            <span className="feature-icon" aria-hidden="true">
+              <Sparkles size={19} />
+            </span>
+            <h2>A moment for you</h2>
           </div>
-          <div className="mood-row" aria-label="Choose how you feel">
-            {["Heavy", "Tired", "Okay", "Steady"].map((mood) => (
-              <button type="button" key={mood}>
-                {mood}
-              </button>
-            ))}
+          <blockquote>{encouragement.text}</blockquote>
+          <div className="reflection-prompt">
+            <span>Consider this</span>
+            <p>{encouragement.prompt}</p>
           </div>
+          <button
+            className="text-button encouragement-refresh"
+            type="button"
+            onClick={rotateEncouragement}
+          >
+            <RefreshCw size={15} aria-hidden="true" />
+            Another thought
+          </button>
         </aside>
       </div>
 
@@ -162,9 +145,9 @@ export default function TodayPage() {
 
       <section className="connection-callout">
         <div className="connection-avatars" aria-hidden="true">
-          <span>QH</span>
-          <span>WM</span>
-          <span>HF</span>
+          <span>N2</span>
+          <span>KJ</span>
+          <span>M8</span>
         </div>
         <div>
           <h2>Care feels lighter when it is shared.</h2>

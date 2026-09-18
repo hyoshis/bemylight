@@ -1,9 +1,7 @@
 import type { CareTask } from "@/lib/types";
 
-export const DAILY_FOCUS_LIMIT = 3;
-
 export function getFocusTasks(tasks: CareTask[]) {
-  return tasks.filter((task) => task.inFocus).slice(0, DAILY_FOCUS_LIMIT);
+  return tasks.filter((task) => task.inFocus && !task.completed);
 }
 
 export function canAddToFocus(tasks: CareTask[], taskId: string) {
@@ -13,7 +11,7 @@ export function canAddToFocus(tasks: CareTask[], taskId: string) {
     return false;
   }
 
-  return getFocusTasks(tasks).length < DAILY_FOCUS_LIMIT;
+  return true;
 }
 
 export function toggleFocusTask(tasks: CareTask[], taskId: string) {
