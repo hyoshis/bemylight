@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { ArrowLeft, HeartHandshake, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { CandleMark } from "@/components/candle-brand";
 
 export default function CommunityGuidelinesPage() {
   return (
     <main className="policy-page">
       <Link className="text-link" href="/">
         <ArrowLeft size={17} aria-hidden="true" />
-        Back to CareTogether
+        Back to Be My Light
       </Link>
       <span className="feature-icon large">
         <ShieldCheck size={25} aria-hidden="true" />
@@ -14,7 +15,7 @@ export default function CommunityGuidelinesPage() {
       <p className="eyebrow">Community guidelines</p>
       <h1>A space built on care, dignity, and consent.</h1>
       <p className="policy-lede">
-        CareTogether is for peer support. Every person here deserves privacy,
+        Be My Light is for peer support. Every person here deserves privacy,
         respect, and room to step away.
       </p>
       <section>
@@ -28,7 +29,7 @@ export default function CommunityGuidelinesPage() {
         <h2>Protect privacy</h2>
         <p>
           Do not share identifying or health information about another person.
-          Never repost private conversations outside CareTogether.
+          Never repost private conversations outside Be My Light.
         </p>
       </section>
       <section>
@@ -46,9 +47,9 @@ export default function CommunityGuidelinesPage() {
         </p>
       </section>
       <div className="support-callout">
-        <HeartHandshake size={22} aria-hidden="true" />
+        <CandleMark width={24} height={24} aria-hidden="true" />
         <p>
-          CareTogether is not an emergency service. If someone may be in
+          Be My Light is not an emergency service. If someone may be in
           immediate danger, contact local emergency services or a qualified
           crisis resource.
         </p>

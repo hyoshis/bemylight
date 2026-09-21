@@ -6,14 +6,14 @@ export default function manifest(): MetadataRoute.Manifest {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
   return {
-    name: "CareTogether",
-    short_name: "CareTogether",
+    name: "Be My Light",
+    short_name: "Be My Light",
     description:
-      "Peer connection, manageable tasks, and gentle encouragement for family caregivers.",
+      "Peer connection, manageable tasks, and encouragement for people navigating health challenges and their supporters.",
     start_url: `${basePath}/home/`,
     display: "standalone",
-    background_color: "#f6f2ea",
-    theme_color: "#f6f2ea",
+    background_color: "#f7f0e4",
+    theme_color: "#f7f0e4",
     icons: [
       {
         src: `${basePath}/icon.svg`,

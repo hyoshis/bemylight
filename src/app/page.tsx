@@ -2,10 +2,15 @@ import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle2,
-  HeartHandshake,
+  Mic,
   MessageCircleHeart,
   Sparkles,
 } from "lucide-react";
+import {
+  CandleGatheringIllustration,
+  CandleMark,
+} from "@/components/candle-brand";
+import { AudienceChoice } from "@/components/audience-choice";
 
 export default function Home() {
   return (
@@ -13,9 +18,9 @@ export default function Home() {
       <nav className="landing-nav" aria-label="Main navigation">
         <Link className="brand" href="/">
           <span className="brand-mark" aria-hidden="true">
-            <HeartHandshake size={22} strokeWidth={1.8} />
+            <CandleMark />
           </span>
-          <span>CareTogether</span>
+          <span>Be My Light</span>
         </Link>
         <Link className="button button-quiet button-small" href="/home">
           Preview the app
@@ -24,19 +29,47 @@ export default function Home() {
 
       <section className="hero">
         <div className="hero-copy">
-          <p className="eyebrow">Care for them. Support for you.</p>
-          <h1>You do not have to carry caregiving alone.</h1>
+          <p className="eyebrow">A community that keeps the light on</p>
+          <h1>Be a light for someone. Let someone be a light for you.</h1>
           <p className="hero-lede">
-            CareTogether helps family caregivers find people who understand,
-            focus on the next small step, and make room for their own wellbeing.
+            Say what needs to happen and Be My Light turns it into a clear list
+            you can keep or hand to someone you trust. Then find people who
+            understand the rest of it.
           </p>
-          <div className="hero-actions">
-            <Link className="button button-primary" href="/onboarding">
-              Find your support circle
-              <ArrowRight size={18} aria-hidden="true" />
-            </Link>
+
+          <div className="hero-highlights">
+            <article>
+              <span className="hero-highlight-icon" aria-hidden="true">
+                <Mic size={19} />
+              </span>
+              <div>
+                <strong>Say it, hand it off</strong>
+                <p>
+                  When asking gets hard, speak your day out loud. AI turns it
+                  into a clear list, keeps your details, and you choose what to
+                  pass on.
+                </p>
+              </div>
+            </article>
+            <article>
+              <span className="hero-highlight-icon" aria-hidden="true">
+                <MessageCircleHeart size={19} />
+              </span>
+              <div>
+                <strong>Light each other</strong>
+                <p>
+                  Honest conversations and private connections with people who
+                  already understand the hard parts.
+                </p>
+              </div>
+            </article>
+          </div>
+
+          <AudienceChoice />
+          <div className="hero-actions hero-actions-secondary">
             <Link className="text-link" href="/home">
-              Explore CareTogether
+              Explore Be My Light
+              <ArrowRight size={17} aria-hidden="true" />
             </Link>
           </div>
           <p className="privacy-note">
@@ -44,65 +77,69 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="hero-card" aria-label="CareTogether daily preview">
-          <div className="hero-card-top">
-            <div>
-              <p className="muted-label">Thursday, September 17</p>
-              <h2>Good evening, hiyoglow.</h2>
+        <div className="hero-visuals">
+          <figure className="hero-candle-card">
+            <div className="hero-candle-art">
+              <CandleGatheringIllustration viewBox="0 62 560 325" />
             </div>
-            <span className="soft-orb" aria-hidden="true" />
-          </div>
-          <div className="quote-card">
-            <Sparkles size={18} aria-hidden="true" />
-            <p>
-              You are allowed to take this one gentle step at a time.
+            <figcaption>
+              <p className="muted-label">Light grows when it is shared</p>
+              <h2>Together, we shine brighter.</h2>
+            </figcaption>
+          </figure>
+
+          <div className="hero-task-card">
+            <p className="hero-task-voice">
+              <span className="hero-task-mic" aria-hidden="true">
+                <Mic size={15} />
+              </span>
+              &ldquo;My prescription needs picking up after four, the pharmacy
+              on Oak Street closes at seven. I need a ride Thursday, the
+              appointment is at two.&rdquo;
             </p>
-          </div>
-          <div className="mini-section">
-            <div className="section-heading-row">
-              <div>
-                <p className="muted-label">What matters now</p>
-                <h3>Your focus steps</h3>
-              </div>
-              <span className="progress-pill">1 complete</span>
-            </div>
-            <ul className="preview-tasks">
-              <li className="is-done">
-                <CheckCircle2 size={20} aria-hidden="true" />
-                Confirm Thursday&apos;s appointment
+            <ul className="hero-task-list">
+              <li>
+                <CheckCircle2 size={15} aria-hidden="true" />
+                <span>
+                  Pick up the prescription after 4 PM
+                  <small>Oak Street pharmacy, closes at 7.</small>
+                </span>
               </li>
               <li>
-                <span className="empty-check" aria-hidden="true" />
-                Refill the weekly pill organizer
-              </li>
-              <li>
-                <span className="empty-check" aria-hidden="true" />
-                Take a ten-minute walk
+                <CheckCircle2 size={15} aria-hidden="true" />
+                <span>
+                  Arrange a ride for Thursday
+                  <small>The appointment is at 2 PM.</small>
+                </span>
               </li>
             </ul>
+            <p className="hero-task-footer">
+              Shared with <strong>priyar</strong> · kept by you
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="value-grid" aria-label="CareTogether benefits">
+      <section className="value-grid" aria-label="Be My Light benefits">
+        <article>
+          <span className="feature-icon">
+            <CheckCircle2 size={22} aria-hidden="true" />
+          </span>
+          <h2>Your list, your control</h2>
+          <p>
+            Speak or type once. Keep the part that matters to you and pass on
+            the rest, one clear step at a time.
+          </p>
+        </article>
         <article>
           <span className="feature-icon">
             <MessageCircleHeart size={22} aria-hidden="true" />
           </span>
           <h2>People who understand</h2>
           <p>
-            Join thoughtful conversations and connect privately with caregivers
-            facing similar moments.
-          </p>
-        </article>
-        <article>
-          <span className="feature-icon">
-            <CheckCircle2 size={22} aria-hidden="true" />
-          </span>
-          <h2>One step at a time</h2>
-          <p>
-            Turn an overwhelming list into the actions you choose to focus on
-            today.
+            Join thoughtful conversations and connect privately with people
+            facing similar moments, whether you are living with a condition or
+            supporting someone who is.
           </p>
         </article>
         <article>
@@ -118,7 +155,7 @@ export default function Home() {
 
       <footer className="landing-footer">
         <p>
-          CareTogether offers peer support and organization, not medical or
+          Be My Light offers peer support and organization, not medical or
           emergency care.
         </p>
         <Link href="/community-guidelines">Community guidelines</Link>

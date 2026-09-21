@@ -5,21 +5,21 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "CareTogether",
-    template: "%s | CareTogether",
+    default: "Be My Light",
+    template: "%s | Be My Light",
   },
   description:
-    "A calm place for caregivers to connect, focus on what matters now, and remember to care for themselves.",
-  applicationName: "CareTogether",
+    "A calm community for people navigating health challenges and the people who support them.",
+  applicationName: "Be My Light",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "CareTogether",
+    title: "Be My Light",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f6f2ea",
+  themeColor: "#f7f0e4",
   colorScheme: "light",
 };
 

@@ -12,7 +12,11 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useCare } from "@/components/care-provider";
-import { communityTopicGroups } from "@/lib/demo-data";
+import {
+  filterByAudience,
+  getCommunityTopicGroups,
+  getRoleCopy,
+} from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
 export default function CommunityPage() {
@@ -24,34 +28,69 @@ export default function CommunityPage() {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
+  const communityTopicGroups = getCommunityTopicGroups(settings.communityRole);
+  const copy = getRoleCopy(settings.communityRole);
+  const rolePosts = filterByAudience(posts, settings.communityRole);
   const conditionTopics =
     communityTopicGroups.find((group) => group.id === "health-conditions")
       ?.topics ?? [];
-  const primaryFilters = [
-    { id: "aging-parents", label: "Aging parents", topics: ["Aging parents"] },
-    {
-      id: "long-distance",
-      label: "Long-distance care",
-      topics: ["Long-distance caregiving"],
-    },
-    {
-      id: "new-caregiving",
-      label: "New to caregiving",
-      topics: ["New to caregiving"],
-    },
-    {
-      id: "work-care",
-      label: "Balancing work and care",
-      topics: ["Balancing work and care"],
-    },
-  ];
+  const primaryFilters =
+    settings.communityRole === "affected"
+      ? [
+          {
+            id: "my-experience",
+            label: "My experience",
+            topics: ["Living with a condition"],
+          },
+          {
+            id: "daily-life",
+            label: "Daily life",
+            topics: ["Daily symptoms", "Work, school & routines"],
+          },
+          {
+            id: "care-plan",
+            label: "Treatment & appointments",
+            topics: ["Treatment & appointments"],
+          },
+          {
+            id: "relationships",
+            label: "Support & relationships",
+            topics: ["Support & relationships"],
+          },
+        ]
+      : [
+          {
+            id: "aging-parents",
+            label: "Aging parents",
+            topics: ["Aging parents"],
+          },
+          {
+            id: "long-distance",
+            label: "Long-distance care",
+            topics: ["Long-distance caregiving"],
+          },
+          {
+            id: "new-caregiving",
+            label: "New to caregiving",
+            topics: ["New to caregiving"],
+          },
+          {
+            id: "work-care",
+            label: "Balancing work and care",
+            topics: ["Balancing work and care"],
+          },
+        ];
+  const roleTopics = communityTopicGroups.flatMap((group) => [
+    ...group.topics,
+  ]) as string[];
   const postTagOptions = [
     ...primaryFilters.flatMap((filter) => filter.topics),
     ...conditionTopics,
   ];
-  const visiblePosts = posts.filter((post) => {
+  const visiblePosts = rolePosts.filter((post) => {
     if (activeFilters.length === 0 && selectedConditions.length === 0) {
-      return true;
+      const postTags = post.tags?.length ? post.tags : [post.topic];
+      return postTags.some((postTag) => roleTopics.includes(postTag));
     }
 
     const selectedTopics = primaryFilters
@@ -117,10 +156,7 @@ export default function CommunityPage() {
         <div>
           <p className="eyebrow">People who understand</p>
           <h1>Community</h1>
-          <p>
-            Share only what feels safe. You can participate under your
-            CareTogether ID.
-          </p>
+          <p>{copy.communityLede}</p>
         </div>
         <div className="safety-chip">
           <ShieldCheck size={17} aria-hidden="true" />
@@ -219,10 +255,16 @@ export default function CommunityPage() {
 
       <form className="compose-card" onSubmit={publish}>
         <div className="compose-heading">
-          <span className="avatar">{settings.displayName.slice(0, 2)}</span>
+          <span className="avatar">
+            {(settings.displayName || "ID").slice(0, 2)}
+          </span>
           <div>
             <strong>Share with people who get it</strong>
-            <small>Post as {settings.displayName}</small>
+            <small>
+              {settings.displayName
+                ? `Post as ${settings.displayName}`
+                : "Choose your community ID before posting"}
+            </small>
           </div>
         </div>
         <label className="sr-only" htmlFor="new-post">

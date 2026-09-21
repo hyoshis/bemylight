@@ -4,13 +4,16 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { ArrowLeft, Flag, Send, ShieldCheck } from "lucide-react";
 import { useCare } from "@/components/care-provider";
+import { filterByAudience } from "@/lib/demo-data";
 
 export default function ConversationPage() {
-  const { conversations, sendMessage } = useCare();
+  const { conversations, settings, sendMessage } = useCare();
   const [draft, setDraft] = useState("");
-  const conversation = conversations.find(
-    (item) => item.id === "conversation-1",
+  const roleConversations = filterByAudience(
+    conversations,
+    settings.communityRole,
   );
+  const conversation = roleConversations[0];
 
   if (!conversation) {
     return (

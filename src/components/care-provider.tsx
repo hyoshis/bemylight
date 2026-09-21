@@ -10,11 +10,15 @@ import {
 } from "react";
 import {
   encouragements,
+  getEncouragementsForRole,
+  getInitialTasksForRole,
   initialConnections,
   initialConversations,
   initialPosts,
   initialSettings,
+  initialSharedTaskLists,
   initialTasks,
+  isDemoTaskList,
 } from "@/lib/demo-data";
 import { toggleFocusTask } from "@/lib/task-utils";
 import type {
@@ -24,6 +28,7 @@ import type {
   Connection,
   Conversation,
   Encouragement,
+  SharedTaskList,
 } from "@/lib/types";
 
 type CareState = {
@@ -31,26 +36,32 @@ type CareState = {
   posts: CarePost[];
   connections: Connection[];
   conversations: Conversation[];
+  sharedTaskLists: SharedTaskList[];
   settings: CareSettings;
   encouragement: Encouragement;
 };
 
 type CareContextValue = CareState & {
   previewMode: true;
-  addTask: (title: string) => void;
+  addTask: (title: string, inFocus?: boolean) => void;
+  addTasks: (tasks: { title: string; detail?: string }[]) => void;
   toggleTask: (id: string) => void;
   toggleTaskFocus: (id: string) => void;
+  shareTaskList: (recipientId: string) => void;
+  toggleSharedTask: (listId: string, taskId: string) => void;
+  markSharedTaskListsSeen: () => void;
   addPost: (body: string, tags: string[]) => void;
   addComment: (postId: string, body: string) => void;
   toggleReaction: (postId: string) => void;
   requestConnection: (id: string) => void;
+  markConversationRead: (conversationId: string) => void;
   sendMessage: (conversationId: string, body: string) => void;
   updateSettings: (settings: Partial<CareSettings>) => void;
   rotateEncouragement: () => void;
   resetPreview: () => void;
 };
 
-const STORAGE_KEY = "caretogether-preview-state-v2";
+const STORAGE_KEY = "caretogether-preview-state-v3";
 
 function getInitialState(): CareState {
   return {
@@ -58,6 +69,7 @@ function getInitialState(): CareState {
     posts: initialPosts,
     connections: initialConnections,
     conversations: initialConversations,
+    sharedTaskLists: initialSharedTaskLists,
     settings: initialSettings,
     encouragement: encouragements[0],
   };
@@ -76,76 +88,39 @@ export function CareProvider({ children }: { children: ReactNode }) {
       try {
         const parsed = JSON.parse(saved) as CareState;
         const initial = getInitialState();
-        const legacyIds: Record<string, string> = {
-          harborlight: "maria84",
-          warmmaple: "kevinj",
-          quietharbor: "nora22",
-          morningfern: "samlee",
-          softcedar: "davidk",
-          bluewindow: "jenm",
-          goldenpine: "ravi88",
-          steadyoak: "tinaq",
-          riverstone: "omar77",
-          willowpath: "lucyk",
-          kindredsky: "mattp",
-          ambertrail: "janet62",
-          calmcurrent: "alexp",
-          mossgarden: "kimberly9",
-          brightcove: "chrisw",
-          silverleaf: "meganl",
-          openmeadow: "danielc",
-          gentlewave: "sophia5",
-          northstar: "jordanr",
-          sunlit: "taylorm",
-        };
-        const migrateId = (id: string) => legacyIds[id] ?? id;
-        const migratedPosts = parsed.posts.map((post) => ({
-          ...post,
-          author: migrateId(post.author),
-          topic:
-            post.topic === "Dementia care"
-              ? "Dementia & memory loss"
-              : post.topic,
-          comments: post.comments.map((comment) => ({
-            ...comment,
-            author: migrateId(comment.author),
-          })),
-        }));
         setState({
           ...initial,
           ...parsed,
-          tasks: parsed.tasks.map((task) => ({
-            ...task,
-            title: task.title.replace("sunlit", "taylorm"),
-          })),
           posts: [
-            ...migratedPosts,
+            ...parsed.posts,
             ...initial.posts.filter(
               (post) =>
-                !migratedPosts.some((savedPost) => savedPost.id === post.id),
+                !parsed.posts.some((savedPost) => savedPost.id === post.id),
             ),
           ],
           connections: initial.connections.map((connection) => ({
             ...connection,
             status:
-              parsed.connections.find((savedConnection) =>
-                savedConnection.id === connection.id
+              parsed.connections.find(
+                (savedConnection) => savedConnection.id === connection.id,
               )?.status ?? connection.status,
           })),
-          conversations: parsed.conversations.map((conversation) => ({
-            ...conversation,
-            person: migrateId(conversation.person),
-          })),
+          sharedTaskLists: [
+            ...parsed.sharedTaskLists,
+            ...initial.sharedTaskLists.filter(
+              (list) =>
+                !parsed.sharedTaskLists.some(
+                  (savedList) => savedList.id === list.id,
+                ),
+            ),
+          ],
           settings: {
             ...initial.settings,
             ...parsed.settings,
-            topics: parsed.settings.topics.filter(
-              (topic) => topic !== "Dementia care",
-            ),
           },
         });
       } catch (error) {
-        console.error("Could not load the CareTogether preview state", error);
+        console.error("Could not load the Be My Light preview state", error);
       }
     }
 
@@ -162,18 +137,35 @@ export function CareProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       previewMode: true,
-      addTask(title) {
+      addTask(title, inFocus = false) {
         const task: CareTask = {
           id: crypto.randomUUID(),
           title,
           category: "care",
           completed: false,
-          inFocus: false,
+          inFocus,
           createdAt: new Date().toISOString(),
         };
         setState((current) => ({
           ...current,
           tasks: [task, ...current.tasks],
+        }));
+      },
+      addTasks(newTaskInputs) {
+        const createdAt = new Date().toISOString();
+        const newTasks: CareTask[] = newTaskInputs.map((input) => ({
+          id: crypto.randomUUID(),
+          title: input.title,
+          detail: input.detail?.trim() ? input.detail.trim() : undefined,
+          category: "care",
+          completed: false,
+          inFocus: false,
+          createdAt,
+        }));
+        if (newTasks.length === 0) return;
+        setState((current) => ({
+          ...current,
+          tasks: [...newTasks, ...current.tasks],
         }));
       },
       toggleTask(id) {
@@ -194,6 +186,63 @@ export function CareProvider({ children }: { children: ReactNode }) {
           tasks: toggleFocusTask(current.tasks, id),
         }));
       },
+      shareTaskList(recipientId) {
+        setState((current) => ({
+          ...current,
+          sharedTaskLists: [
+            {
+              id: crypto.randomUUID(),
+              ownerId: current.settings.displayName || "you",
+              recipientId,
+              sharedAt: "Just now",
+              audience:
+                current.settings.communityRole === "affected"
+                  ? "affected"
+                  : "caregiver",
+              seen: true,
+              tasks: current.tasks
+                .filter((task) => !task.completed)
+                .map((task) => ({
+                  id: task.id,
+                  title: task.title,
+                  detail: task.detail,
+                  completed: task.completed,
+                })),
+            },
+            ...current.sharedTaskLists,
+          ],
+        }));
+      },
+      toggleSharedTask(listId, taskId) {
+        setState((current) => ({
+          ...current,
+          sharedTaskLists: current.sharedTaskLists.map((list) =>
+            list.id === listId
+              ? {
+                  ...list,
+                  tasks: list.tasks.map((task) =>
+                    task.id === taskId
+                      ? { ...task, completed: !task.completed }
+                      : task,
+                  ),
+                }
+              : list,
+          ),
+        }));
+      },
+      markSharedTaskListsSeen() {
+        setState((current) => {
+          if (current.sharedTaskLists.every((list) => list.seen)) {
+            return current;
+          }
+          return {
+            ...current,
+            sharedTaskLists: current.sharedTaskLists.map((list) =>
+              list.seen ? list : { ...list, seen: true },
+            ),
+          };
+        });
+      },
       addPost(body, tags) {
         setState((current) => ({
           ...current,
@@ -203,6 +252,10 @@ export function CareProvider({ children }: { children: ReactNode }) {
               author: current.settings.displayName,
               topic: tags[0] ?? "General",
               tags,
+              audience:
+                current.settings.communityRole === "affected"
+                  ? "affected"
+                  : "caregiver",
               body,
               createdAt: "Just now",
               reactions: 0,
@@ -258,6 +311,16 @@ export function CareProvider({ children }: { children: ReactNode }) {
           ),
         }));
       },
+      markConversationRead(conversationId) {
+        setState((current) => ({
+          ...current,
+          conversations: current.conversations.map((conversation) =>
+            conversation.id === conversationId
+              ? { ...conversation, unread: 0 }
+              : conversation,
+          ),
+        }));
+      },
       sendMessage(conversationId, body) {
         setState((current) => ({
           ...current,
@@ -284,20 +347,36 @@ export function CareProvider({ children }: { children: ReactNode }) {
         }));
       },
       updateSettings(settings) {
-        setState((current) => ({
-          ...current,
-          settings: { ...current.settings, ...settings },
-        }));
+        setState((current) => {
+          const nextSettings = { ...current.settings, ...settings };
+          const roleChanged =
+            settings.communityRole !== undefined &&
+            settings.communityRole !== current.settings.communityRole;
+          const reseedTasks = roleChanged && isDemoTaskList(current.tasks);
+          return {
+            ...current,
+            settings: nextSettings,
+            tasks: reseedTasks
+              ? getInitialTasksForRole(nextSettings.communityRole)
+              : current.tasks,
+            encouragement: roleChanged
+              ? getEncouragementsForRole(nextSettings.communityRole)[0]
+              : current.encouragement,
+          };
+        });
       },
       rotateEncouragement() {
         setState((current) => {
-          const currentIndex = encouragements.findIndex(
+          const roleEncouragements = getEncouragementsForRole(
+            current.settings.communityRole,
+          );
+          const currentIndex = roleEncouragements.findIndex(
             (item) => item.id === current.encouragement.id,
           );
-          const nextIndex = (currentIndex + 1) % encouragements.length;
+          const nextIndex = (currentIndex + 1) % roleEncouragements.length;
           return {
             ...current,
-            encouragement: encouragements[nextIndex],
+            encouragement: roleEncouragements[nextIndex],
           };
         });
       },

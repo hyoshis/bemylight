@@ -2,9 +2,11 @@
 
 import { Leaf, RefreshCw, Sparkles } from "lucide-react";
 import { useCare } from "@/components/care-provider";
+import { getRoleCopy } from "@/lib/demo-data";
 
 export default function EncouragementPage() {
-  const { encouragement, rotateEncouragement } = useCare();
+  const { encouragement, settings, rotateEncouragement } = useCare();
+  const copy = getRoleCopy(settings.communityRole);
 
   return (
     <div className="page-stack encouragement-page">
@@ -12,11 +14,9 @@ export default function EncouragementPage() {
         <span className="feature-icon large">
           <Leaf size={25} aria-hidden="true" />
         </span>
-        <p className="eyebrow">A quiet moment for you</p>
-        <h1>You deserve care, too.</h1>
-        <p>
-          Take a quiet moment with a reflection chosen to support you today.
-        </p>
+        <p className="eyebrow">{copy.encouragementEyebrow}</p>
+        <h1>{copy.encouragementTitle}</h1>
+        <p>{copy.encouragementLede}</p>
       </header>
 
       <article className="large-encouragement-card">
@@ -40,7 +40,7 @@ export default function EncouragementPage() {
       </article>
 
       <p className="content-note">
-        CareTogether encouragement is reviewed before publication and is never
+        Be My Light encouragement is reviewed before publication and is never
         presented as medical or therapeutic guidance.
       </p>
     </div>

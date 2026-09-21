@@ -13,10 +13,16 @@ import {
   UserRoundPlus,
 } from "lucide-react";
 import { useCare } from "@/components/care-provider";
+import { filterByAudience, getRoleCopy } from "@/lib/demo-data";
 import { cn } from "@/lib/utils";
 
 export default function ConnectionsPage() {
   const { connections, settings, requestConnection, updateSettings } = useCare();
+  const copy = getRoleCopy(settings.communityRole);
+  const roleConnections = useMemo(
+    () => filterByAudience(connections, settings.communityRole),
+    [connections, settings.communityRole],
+  );
   const connectionLocation = settings.connectionLocation ?? "everywhere";
   const connectionZipCode = settings.connectionZipCode ?? "";
   const [displayMode, setDisplayMode] = useState<"everywhere" | "zipcode">(
@@ -50,18 +56,17 @@ export default function ConnectionsPage() {
   const nearbyConnections = useMemo(() => {
     const offset = displayZip
       .split("")
-      .reduce((total, digit) => total + Number(digit), 0) % connections.length;
+      .reduce((total, digit) => total + Number(digit), 0) %
+      Math.max(roleConnections.length, 1);
 
     return Array.from(
-      { length: Math.min(6, connections.length) },
-      (_, index) => connections[(offset + index) % connections.length],
+      { length: Math.min(6, roleConnections.length) },
+      (_, index) => roleConnections[(offset + index) % roleConnections.length],
     );
-  }, [connections, displayZip]);
+  }, [roleConnections, displayZip]);
 
   const visibleConnections =
-    displayMode === "zipcode"
-      ? nearbyConnections
-      : connections.slice(0, 20);
+    displayMode === "zipcode" ? nearbyConnections : roleConnections.slice(0, 20);
 
   function updateZipCode(value: string) {
     updateSettings({
@@ -74,12 +79,9 @@ export default function ConnectionsPage() {
     <div className="page-stack">
       <header className="page-header">
         <div>
-          <p className="eyebrow">Connection, with consent</p>
-          <h1>People you may understand</h1>
-          <p>
-            Suggestions use the caregiving topics and location preference you
-            choose to share. Messages open after both people agree.
-          </p>
+          <p className="eyebrow">{copy.connectionsEyebrow}</p>
+          <h1>{copy.connectionsTitle}</h1>
+          <p>{copy.connectionsLede}</p>
         </div>
       </header>
 

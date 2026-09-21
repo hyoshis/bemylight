@@ -5,9 +5,11 @@ import type {
   Connection,
   Conversation,
   Encouragement,
+  CommunityRole,
+  SharedTaskList,
 } from "@/lib/types";
 
-export const careTopics = [
+export const caregiverTopics = [
   "Aging parents",
   "Long-distance caregiving",
   "New to caregiving",
@@ -16,7 +18,20 @@ export const careTopics = [
   "Caregiver wellbeing",
 ] as const;
 
-export const communityTopicGroups = [
+export const affectedTopics = [
+  "Living with a condition",
+  "Daily symptoms",
+  "Treatment & appointments",
+  "Mobility & disability",
+  "Work, school & routines",
+  "Support & relationships",
+] as const;
+
+export function getTopicsForRole(role: CommunityRole | null) {
+  return role === "affected" ? affectedTopics : caregiverTopics;
+}
+
+export const caregiverCommunityTopicGroups = [
   {
     id: "care-situation",
     label: "Care situation",
@@ -66,6 +81,48 @@ export const communityTopicGroups = [
   },
 ] as const;
 
+export const affectedCommunityTopicGroups = [
+  {
+    id: "my-experience",
+    label: "My experience",
+    topics: ["Living with a condition"],
+  },
+  {
+    id: "daily-life",
+    label: "Daily life",
+    topics: ["Daily symptoms", "Mobility & disability", "Work, school & routines"],
+  },
+  {
+    id: "care-plan",
+    label: "Care plan",
+    topics: ["Treatment & appointments"],
+  },
+  {
+    id: "relationships",
+    label: "Support",
+    topics: ["Support & relationships"],
+  },
+  {
+    id: "health-conditions",
+    label: "Health conditions",
+    topics: [
+      "Dementia & memory loss",
+      "Cancer care",
+      "Stroke recovery",
+      "Parkinson's",
+      "Heart conditions",
+      "Diabetes",
+      "Mobility & disability",
+    ],
+  },
+] as const;
+
+export function getCommunityTopicGroups(role: CommunityRole | null) {
+  return role === "affected"
+    ? affectedCommunityTopicGroups
+    : caregiverCommunityTopicGroups;
+}
+
 export const initialTasks: CareTask[] = [
   {
     id: "task-1",
@@ -112,9 +169,131 @@ export const initialTasks: CareTask[] = [
   },
 ];
 
+export const affectedInitialTasks: CareTask[] = [
+  {
+    id: "affected-task-1",
+    title: "Ask for a ride to Thursday's appointment",
+    category: "appointment",
+    completed: true,
+    inFocus: true,
+    dueLabel: "Today",
+    createdAt: "2026-09-15T08:00:00.000Z",
+  },
+  {
+    id: "affected-task-2",
+    title: "Have my prescription picked up after 4 PM",
+    detail:
+      "The pharmacy on Oak Street holds it under my last name. They close at 7.",
+    category: "care",
+    completed: false,
+    inFocus: true,
+    dueLabel: "Tonight",
+    createdAt: "2026-09-15T08:05:00.000Z",
+  },
+  {
+    id: "affected-task-3",
+    title: "Rest for twenty minutes after lunch",
+    category: "self-care",
+    completed: false,
+    inFocus: true,
+    createdAt: "2026-09-15T08:10:00.000Z",
+  },
+  {
+    id: "affected-task-4",
+    title: "Write the three questions I want to ask my doctor",
+    category: "paperwork",
+    completed: false,
+    inFocus: false,
+    dueLabel: "This week",
+    createdAt: "2026-09-14T08:00:00.000Z",
+  },
+  {
+    id: "affected-task-5",
+    title: "Ask someone to move the laundry basket downstairs",
+    category: "household",
+    completed: false,
+    inFocus: false,
+    createdAt: "2026-09-13T08:00:00.000Z",
+  },
+];
+
+export function getInitialTasksForRole(role: CommunityRole | null) {
+  return role === "affected" ? affectedInitialTasks : initialTasks;
+}
+
+export function isDemoTaskList(tasks: CareTask[]) {
+  return [initialTasks, affectedInitialTasks].some(
+    (demoTasks) =>
+      demoTasks.length === tasks.length &&
+      demoTasks.every((demoTask, index) => demoTask.id === tasks[index]?.id),
+  );
+}
+
+export const initialSharedTaskLists: SharedTaskList[] = [
+  {
+    id: "shared-list-1",
+    ownerId: "ellen71",
+    recipientId: "current-user",
+    sharedAt: "Today at 9:15 AM",
+    audience: "caregiver",
+    seen: false,
+    tasks: [
+      {
+        id: "shared-task-1",
+        title: "Pick up the prescription after 4 PM",
+        detail:
+          "The pharmacy on Oak Street holds it under my last name. They close at 7.",
+        completed: false,
+      },
+      {
+        id: "shared-task-2",
+        title: "Confirm a ride to Thursday's appointment",
+        detail: "The appointment is at 2 PM and I need to leave by 1:15.",
+        completed: false,
+      },
+      {
+        id: "shared-task-3",
+        title: "Bring the questions saved in the blue notebook",
+        detail: "It is on the kitchen counter, or in the bag by the door.",
+        completed: true,
+      },
+    ],
+  },
+  {
+    id: "shared-list-2",
+    ownerId: "current-user",
+    recipientId: "priyar",
+    sharedAt: "Today at 9:15 AM",
+    audience: "affected",
+    seen: true,
+    tasks: [
+      {
+        id: "affected-shared-task-1",
+        title: "Pick up the prescription after 4 PM",
+        detail:
+          "The pharmacy on Oak Street holds it under my last name. They close at 7.",
+        completed: false,
+      },
+      {
+        id: "affected-shared-task-2",
+        title: "Drive me to Thursday's appointment",
+        detail: "It starts at 2 PM, so I need to leave the house by 1:15.",
+        completed: false,
+      },
+      {
+        id: "affected-shared-task-3",
+        title: "Bring in the package by the front door",
+        detail: "If it is not there, the neighbor in 4B usually takes it in.",
+        completed: true,
+      },
+    ],
+  },
+];
+
 export const initialPosts: CarePost[] = [
   {
     id: "post-1",
+    audience: "caregiver",
     author: "samlee",
     topic: "New to caregiving",
     body:
@@ -134,6 +313,7 @@ export const initialPosts: CarePost[] = [
   },
   {
     id: "post-2",
+    audience: "caregiver",
     author: "davidk",
     topic: "Balancing work and care",
     body:
@@ -145,6 +325,7 @@ export const initialPosts: CarePost[] = [
   },
   {
     id: "post-3",
+    audience: "caregiver",
     author: "jenm",
     topic: "Dementia & memory loss",
     body:
@@ -164,6 +345,7 @@ export const initialPosts: CarePost[] = [
   },
   {
     id: "post-4",
+    audience: "caregiver",
     author: "maria84",
     topic: "Aging parents",
     body:
@@ -183,6 +365,7 @@ export const initialPosts: CarePost[] = [
   },
   {
     id: "post-5",
+    audience: "caregiver",
     author: "jordanr",
     topic: "Aging parents",
     body:
@@ -194,6 +377,7 @@ export const initialPosts: CarePost[] = [
   },
   {
     id: "post-6",
+    audience: "caregiver",
     author: "lucyk",
     topic: "Aging parents",
     body:
@@ -210,9 +394,181 @@ export const initialPosts: CarePost[] = [
       },
     ],
   },
+  {
+    id: "post-7",
+    audience: "affected",
+    author: "rowan4",
+    topic: "Living with a condition",
+    tags: ["Living with a condition", "Support & relationships"],
+    body:
+      "I am learning that I do not need to explain every detail of what I am going through. Telling close friends what kind of support helps has made conversations easier.",
+    createdAt: "45 min ago",
+    reactions: 32,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-8",
+    audience: "affected",
+    author: "isla9",
+    topic: "Daily symptoms",
+    tags: ["Daily symptoms", "Work, school & routines"],
+    body:
+      "My energy changes a lot during the day. Moving my most important work to the morning has helped me stop measuring myself against a schedule that no longer fits.",
+    createdAt: "3 hr ago",
+    reactions: 24,
+    reacted: false,
+    comments: [
+      {
+        id: "comment-5",
+        author: "nadia5",
+        body: "Giving myself permission to plan around my energy helped me too.",
+        createdAt: "2 hr ago",
+      },
+    ],
+  },
+  {
+    id: "post-9",
+    audience: "affected",
+    author: "priyar",
+    topic: "Treatment & appointments",
+    body:
+      "Before appointments I keep one note with my top three questions. It helps when the conversation moves quickly or I feel overwhelmed.",
+    createdAt: "Yesterday",
+    reactions: 29,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-10",
+    audience: "affected",
+    author: "jonahb",
+    topic: "Mobility & disability",
+    tags: ["Mobility & disability", "Support & relationships"],
+    body:
+      "I appreciate when people ask what would make a space easier instead of assuming what I need. That small question gives me more control.",
+    createdAt: "2 days ago",
+    reactions: 38,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-11",
+    audience: "affected",
+    author: "ellen71",
+    topic: "Mobility & disability",
+    tags: ["Mobility & disability", "Support & relationships"],
+    body:
+      "Typing a list is hard for me now, so I say out loud what needs to happen and let it come back as a clear list. Sending that list to my daughter feels very different from apologizing for another favor.",
+    createdAt: "1 hr ago",
+    reactions: 46,
+    reacted: false,
+    comments: [
+      {
+        id: "comment-6",
+        author: "rowan4",
+        body:
+          "This is how I started too. A list feels like a plan. A favor feels like a debt.",
+        createdAt: "40 min ago",
+      },
+    ],
+  },
+  {
+    id: "post-12",
+    audience: "affected",
+    author: "jonahb",
+    topic: "Support & relationships",
+    tags: ["Support & relationships", "Mobility & disability"],
+    body:
+      "I used to say I was fine because asking felt like too much. Now I keep a short running list, and when someone offers I can name one real thing instead of nothing.",
+    createdAt: "5 hr ago",
+    reactions: 31,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-13",
+    audience: "affected",
+    author: "marcus3",
+    topic: "Stroke recovery",
+    tags: ["Stroke recovery", "Living with a condition"],
+    body:
+      "Six months after my stroke, words still come slowly on hard days. Saying a task out loud and seeing it written down has given me back a piece of my own planning.",
+    createdAt: "Yesterday",
+    reactions: 27,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-14",
+    audience: "affected",
+    author: "elena6",
+    topic: "Cancer care",
+    tags: ["Cancer care", "Treatment & appointments"],
+    body:
+      "Treatment weeks and recovery weeks look nothing alike. I plan the heavy things for the good days and let the rest move without treating it as a failure.",
+    createdAt: "2 days ago",
+    reactions: 33,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-15",
+    audience: "affected",
+    author: "theoj",
+    topic: "Work, school & routines",
+    tags: ["Work, school & routines", "Daily symptoms"],
+    body:
+      "I told my manager what I need instead of what I cannot do. The conversation was shorter and much kinder than I expected.",
+    createdAt: "3 days ago",
+    reactions: 22,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-16",
+    audience: "affected",
+    author: "nadia5",
+    topic: "Living with a condition",
+    tags: ["Living with a condition", "Support & relationships"],
+    body:
+      "Handing a task to someone else felt like losing independence at first. It helped to realize I am still the one deciding what matters and in what order.",
+    createdAt: "4 days ago",
+    reactions: 40,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-17",
+    audience: "caregiver",
+    author: "omar77",
+    topic: "New to caregiving",
+    tags: ["New to caregiving", "Family coordination"],
+    body:
+      "My mom started sending me her own list instead of me guessing. I do less inventing and more helping, and she stays in charge of her week.",
+    createdAt: "6 hr ago",
+    reactions: 30,
+    reacted: false,
+    comments: [],
+  },
+  {
+    id: "post-18",
+    audience: "caregiver",
+    author: "janet62",
+    topic: "Stress & burnout",
+    tags: ["Stress & burnout", "Rest & self-care"],
+    body:
+      "Seeing what actually needs to happen, in her words, removed a surprising amount of worry. I stopped carrying an invisible list I had written for her.",
+    createdAt: "Yesterday",
+    reactions: 25,
+    reacted: false,
+    comments: [],
+  },
 ];
 
-export const initialConnections: Connection[] = [
+type ConnectionProfile = Omit<Connection, "audience">;
+
+const caregiverConnectionProfiles: ConnectionProfile[] = [
   {
     id: "connection-1",
     name: "maria84",
@@ -602,12 +958,217 @@ export const initialConnections: Connection[] = [
   },
 ];
 
+const affectedConnectionProfiles: ConnectionProfile[] = [
+  {
+    id: "affected-connection-1",
+    name: "rowan4",
+    summary: "Living with MS and learning what to hand off without guilt.",
+    introduction:
+      "My mobility changed faster than I expected. I am practicing asking for specific help instead of waiting until everything is urgent.",
+    interests: ["Audiobooks", "Slow mornings", "Watercolor"],
+    sharedTopics: ["Living with a condition", "Mobility & disability"],
+    recentPosts: [
+      {
+        id: "rowan4-post-1",
+        topic: "Living with a condition",
+        body:
+          "Telling close friends what kind of support helps has made conversations easier.",
+        createdAt: "45 min ago",
+      },
+    ],
+    status: "connected",
+  },
+  {
+    id: "affected-connection-2",
+    name: "isla9",
+    summary: "Budgeting energy around unpredictable daily symptoms.",
+    introduction:
+      "I work part-time and plan my week around energy rather than hours. I like trading practical ideas that respect real limits.",
+    interests: ["Tea", "Knitting", "Quiet parks"],
+    sharedTopics: ["Daily symptoms", "Work, school & routines"],
+    recentPosts: [
+      {
+        id: "isla9-post-1",
+        topic: "Daily symptoms",
+        body:
+          "Moving my most important work to the morning helped me stop measuring myself against an old schedule.",
+        createdAt: "3 hr ago",
+      },
+    ],
+    status: "suggested",
+  },
+  {
+    id: "affected-connection-3",
+    name: "marcus3",
+    summary: "Rebuilding independence six months after a stroke.",
+    introduction:
+      "Speaking is easier than typing for me, and I am relearning how to plan my own days without handing all of it to my family.",
+    interests: ["Jazz records", "Chess", "Physical therapy walks"],
+    sharedTopics: ["Stroke recovery", "Living with a condition"],
+    recentPosts: [
+      {
+        id: "marcus3-post-1",
+        topic: "Stroke recovery",
+        body:
+          "Saying a task out loud and seeing it written down gave me back a piece of my own planning.",
+        createdAt: "Yesterday",
+      },
+    ],
+    status: "suggested",
+  },
+  {
+    id: "affected-connection-4",
+    name: "priyar",
+    summary: "Managing rheumatoid arthritis alongside a full work week.",
+    introduction:
+      "Appointments, flares, and paperwork take real time. I am learning to protect the parts of my life that are not about being a patient.",
+    interests: ["Swimming", "Cooking", "Design podcasts"],
+    sharedTopics: ["Treatment & appointments", "Work, school & routines"],
+    recentPosts: [
+      {
+        id: "priyar-post-1",
+        topic: "Treatment & appointments",
+        body:
+          "I keep one note with my top three questions before every appointment.",
+        createdAt: "Yesterday",
+      },
+    ],
+    status: "suggested",
+  },
+  {
+    id: "affected-connection-5",
+    name: "jonahb",
+    summary: "A wheelchair user asking for help in specific, concrete ways.",
+    introduction:
+      "I would rather someone ask what would make a space easier than assume. I am happy to share what has worked for me.",
+    interests: ["Basketball", "Woodworking", "City maps"],
+    sharedTopics: ["Mobility & disability", "Support & relationships"],
+    recentPosts: [
+      {
+        id: "jonahb-post-1",
+        topic: "Mobility & disability",
+        body:
+          "I keep a short running list so that when someone offers, I can name one real thing.",
+        createdAt: "5 hr ago",
+      },
+    ],
+    status: "suggested",
+  },
+  {
+    id: "affected-connection-6",
+    name: "elena6",
+    summary: "Planning life around treatment weeks and recovery weeks.",
+    introduction:
+      "Some weeks I can do almost everything and some weeks I can do very little. I am practicing letting both be normal.",
+    interests: ["Poetry", "Gardening", "Photography"],
+    sharedTopics: ["Cancer care", "Treatment & appointments"],
+    recentPosts: [
+      {
+        id: "elena6-post-1",
+        topic: "Cancer care",
+        body:
+          "I plan the heavy things for the good days and let the rest move without calling it failure.",
+        createdAt: "2 days ago",
+      },
+    ],
+    status: "suggested",
+  },
+  {
+    id: "affected-connection-7",
+    name: "ellen71",
+    summary: "Living with Parkinson's and delegating by voice.",
+    introduction:
+      "Writing is difficult for me, so I say what I need out loud and send the list to the people who help me. It keeps me in charge of my own week.",
+    interests: ["Choir", "Crossword puzzles", "Old films"],
+    sharedTopics: ["Parkinson's", "Mobility & disability"],
+    recentPosts: [
+      {
+        id: "ellen71-post-1",
+        topic: "Mobility & disability",
+        body:
+          "Sending a list feels very different from apologizing for another favor.",
+        createdAt: "1 hr ago",
+      },
+    ],
+    status: "suggested",
+  },
+  {
+    id: "affected-connection-8",
+    name: "theoj",
+    summary: "Balancing type 1 diabetes with school and a part-time job.",
+    introduction:
+      "I am young and most people assume I am fine. I am learning to say what I need before a hard day becomes a crisis.",
+    interests: ["Running", "Video games", "Cooking experiments"],
+    sharedTopics: ["Diabetes", "Work, school & routines"],
+    recentPosts: [
+      {
+        id: "theoj-post-1",
+        topic: "Work, school & routines",
+        body:
+          "I told my manager what I need instead of what I cannot do, and the conversation was kinder than I expected.",
+        createdAt: "3 days ago",
+      },
+    ],
+    status: "suggested",
+  },
+  {
+    id: "affected-connection-9",
+    name: "nadia5",
+    summary: "Living with long COVID and symptoms other people cannot see.",
+    introduction:
+      "I am rebuilding slowly and appreciate people who believe me without needing proof.",
+    interests: ["Sketching", "Birdsong", "Short walks"],
+    sharedTopics: ["Living with a condition", "Support & relationships"],
+    recentPosts: [
+      {
+        id: "nadia5-post-1",
+        topic: "Living with a condition",
+        body:
+          "I am still the one deciding what matters and in what order, even when someone else does the task.",
+        createdAt: "4 days ago",
+      },
+    ],
+    status: "suggested",
+  },
+  {
+    id: "affected-connection-10",
+    name: "samir8",
+    summary: "Adjusting daily routines after a heart condition diagnosis.",
+    introduction:
+      "I am figuring out which habits to keep and which ones to let go, and I like hearing how other people made those decisions.",
+    interests: ["Fishing", "Documentaries", "Slow cooking"],
+    sharedTopics: ["Heart conditions", "Daily symptoms"],
+    recentPosts: [
+      {
+        id: "samir8-post-1",
+        topic: "Daily symptoms",
+        body:
+          "I stopped treating a slower pace as a temporary detour and started planning for it.",
+        createdAt: "5 days ago",
+      },
+    ],
+    status: "suggested",
+  },
+];
+
+export const initialConnections: Connection[] = [
+  ...caregiverConnectionProfiles.map((profile) => ({
+    ...profile,
+    audience: "caregiver" as const,
+  })),
+  ...affectedConnectionProfiles.map((profile) => ({
+    ...profile,
+    audience: "affected" as const,
+  })),
+];
+
 export const initialConversations: Conversation[] = [
   {
     id: "conversation-1",
     person: "nora22",
     subtitle: "Connected through Dementia & memory loss",
     unread: 1,
+    audience: "caregiver",
     messages: [
       {
         id: "message-1",
@@ -632,15 +1193,46 @@ export const initialConversations: Conversation[] = [
       },
     ],
   },
+  {
+    id: "conversation-2",
+    person: "rowan4",
+    subtitle: "Connected through Living with a condition",
+    unread: 1,
+    audience: "affected",
+    messages: [
+      {
+        id: "affected-message-1",
+        sender: "them",
+        body:
+          "Hi. I read what you wrote about asking for help. I went through the same thing when my mobility changed. No pressure to reply quickly.",
+        createdAt: "7:42 PM",
+      },
+      {
+        id: "affected-message-2",
+        sender: "me",
+        body:
+          "Thank you. The hardest part is not the task itself. It is asking someone else to do it.",
+        createdAt: "7:51 PM",
+      },
+      {
+        id: "affected-message-3",
+        sender: "them",
+        body:
+          "That changed for me when I started sending a list instead of asking in the moment. It felt like planning again rather than apologizing.",
+        createdAt: "8:03 PM",
+      },
+    ],
+  },
 ];
 
 export const initialSettings: CareSettings = {
-  displayName: "hiyoglow",
+  displayName: "",
+  communityRole: null,
   emailReminders: true,
   dailyReminderTime: "08:30",
   connectionLocation: "everywhere",
   connectionZipCode: "",
-  topics: ["Aging parents", "New to caregiving", "Caregiver wellbeing"],
+  topics: [],
 };
 
 export const encouragements: Encouragement[] = [
@@ -764,3 +1356,157 @@ export const encouragements: Encouragement[] = [
     prompt: "Speak to yourself as you would to someone you love.",
   },
 ];
+
+export const affectedEncouragements: Encouragement[] = [
+  {
+    id: "affected-encouragement-1",
+    text: "What you are experiencing is real, even when other people cannot see it.",
+    prompt: "What would help you feel understood today?",
+  },
+  {
+    id: "affected-encouragement-2",
+    text: "Your diagnosis or condition is part of your life, not the whole of who you are.",
+    prompt: "Name one part of yourself that still feels entirely yours.",
+  },
+  {
+    id: "affected-encouragement-3",
+    text: "A different pace is still a valid pace.",
+    prompt: "What can you adjust to better match your energy today?",
+  },
+  {
+    id: "affected-encouragement-4",
+    text: "Needing support does not make you a burden.",
+    prompt: "What is one specific kind of help you could welcome?",
+  },
+  {
+    id: "affected-encouragement-5",
+    text: "You are allowed to ask people to listen before they offer solutions.",
+    prompt: "Who could make space for what you need to say?",
+  },
+  {
+    id: "affected-encouragement-6",
+    text: "You do not need to be positive every moment to be moving forward.",
+    prompt: "Let one honest feeling exist without correcting it.",
+  },
+  {
+    id: "affected-encouragement-7",
+    text: "Your body deserves patience, especially on unpredictable days.",
+    prompt: "What expectation can you soften right now?",
+  },
+  {
+    id: "affected-encouragement-8",
+    text: "You can make decisions one appointment and one question at a time.",
+    prompt: "Write down the next question that matters most.",
+  },
+  {
+    id: "affected-encouragement-9",
+    text: "Receiving care can be an act of trust, not a loss of independence.",
+    prompt: "Where would support give you more choice or energy?",
+  },
+  {
+    id: "affected-encouragement-10",
+    text: "You are still the expert on your own experience.",
+    prompt: "What do you wish others understood about today?",
+  },
+  {
+    id: "affected-encouragement-11",
+    text: "A difficult symptom can take up space without taking over your identity.",
+    prompt: "Notice one moment today that was about more than your condition.",
+  },
+  {
+    id: "affected-encouragement-12",
+    text: "You deserve plans that adapt to you, not the other way around.",
+    prompt: "What could be made more accessible or flexible?",
+  },
+];
+
+export function getEncouragementsForRole(role: CommunityRole | null) {
+  return role === "affected" ? affectedEncouragements : encouragements;
+}
+
+export function getAudienceRole(role: CommunityRole | null): CommunityRole {
+  return role === "affected" ? "affected" : "caregiver";
+}
+
+export function filterByAudience<T extends { audience: CommunityRole }>(
+  items: T[],
+  role: CommunityRole | null,
+) {
+  const audience = getAudienceRole(role);
+  return items.filter((item) => item.audience === audience);
+}
+
+type RoleCopy = {
+  todayEyebrow: string;
+  todayLede: string;
+  communityLede: string;
+  connectionsEyebrow: string;
+  connectionsTitle: string;
+  connectionsLede: string;
+  connectionCalloutTitle: string;
+  connectionCalloutBody: string;
+  messagesLede: string;
+  encouragementEyebrow: string;
+  encouragementTitle: string;
+  encouragementLede: string;
+  tasksEyebrow: string;
+  tasksTitle: string;
+  tasksLede: string;
+  taskPlaceholder: string;
+};
+
+const caregiverCopy: RoleCopy = {
+  todayEyebrow: "Your community is here",
+  todayLede:
+    "See what other caregivers are sharing, offer a little light, and choose what needs your attention next.",
+  communityLede:
+    "Share only what feels safe. Other caregivers are here under their Be My Light ID.",
+  connectionsEyebrow: "Connection, with consent",
+  connectionsTitle: "Caregivers who understand",
+  connectionsLede:
+    "Suggestions use the caregiving topics and location preference you choose to share. Messages open after both people agree.",
+  connectionCalloutTitle: "Caregiving feels lighter when it is shared.",
+  connectionCalloutBody:
+    "other caregivers with experiences similar to yours.",
+  messagesLede:
+    "Only caregivers who both agreed to connect can message each other.",
+  encouragementEyebrow: "A quiet moment for you",
+  encouragementTitle: "You deserve care, too.",
+  encouragementLede:
+    "Caring for someone else is constant work. Take a quiet moment with a reflection chosen for caregivers.",
+  tasksEyebrow: "My focus",
+  tasksTitle: "Focus on what you can control.",
+  tasksLede:
+    "Keep your own next steps clear and open the lists that the person you support has shared with you.",
+  taskPlaceholder: "What can you take care of now?",
+};
+
+const affectedCopy: RoleCopy = {
+  todayEyebrow: "Your community is here",
+  todayLede:
+    "See what others living with a condition are sharing, offer a little light, and choose what matters most to you today.",
+  communityLede:
+    "Share only what feels safe. Other people living with a condition are here under their Be My Light ID.",
+  connectionsEyebrow: "Connection, with consent",
+  connectionsTitle: "People who live it too",
+  connectionsLede:
+    "Suggestions use the health topics and location preference you choose to share. Messages open after both people agree.",
+  connectionCalloutTitle: "Nobody should carry a diagnosis alone.",
+  connectionCalloutBody:
+    "other people living with conditions similar to yours.",
+  messagesLede:
+    "Only people who both agreed to connect can message each other.",
+  encouragementEyebrow: "A quiet moment for you",
+  encouragementTitle: "Your experience deserves gentleness.",
+  encouragementLede:
+    "Living with a condition asks a lot of you. Take a quiet moment with a reflection written for this part of the journey.",
+  tasksEyebrow: "My focus",
+  tasksTitle: "Stay in charge of your day.",
+  tasksLede:
+    "Say or write what needs to happen, keep the part you want to hold yourself, and hand the rest to someone you trust.",
+  taskPlaceholder: "What needs to happen today?",
+};
+
+export function getRoleCopy(role: CommunityRole | null): RoleCopy {
+  return role === "affected" ? affectedCopy : caregiverCopy;
+}

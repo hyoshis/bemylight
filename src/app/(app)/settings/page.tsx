@@ -3,12 +3,14 @@
 import { FormEvent, useState } from "react";
 import { Bell, Download, RotateCcw, Shield, UserRound } from "lucide-react";
 import { useCare } from "@/components/care-provider";
-import { careTopics } from "@/lib/demo-data";
+import { getTopicsForRole } from "@/lib/demo-data";
+import type { CommunityRole } from "@/lib/types";
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetPreview } = useCare();
   const [saved, setSaved] = useState(false);
   const [displayName, setDisplayName] = useState(settings.displayName);
+  const topicOptions = getTopicsForRole(settings.communityRole);
 
   function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,13 +25,17 @@ export default function SettingsPage() {
     updateSettings({ topics });
   }
 
+  function chooseRole(communityRole: CommunityRole) {
+    updateSettings({ communityRole, topics: [] });
+  }
+
   return (
     <div className="page-stack narrow-page">
       <header className="page-header">
         <div>
           <p className="eyebrow">Your choices</p>
           <h1>Settings & privacy</h1>
-          <p>Control what you share and how CareTogether supports you.</p>
+          <p>Control what you share and how Be My Light supports you.</p>
         </div>
       </header>
 
@@ -42,8 +48,31 @@ export default function SettingsPage() {
           </div>
         </div>
         <form className="form-stack" onSubmit={saveProfile}>
+          <fieldset>
+            <legend>My perspective</legend>
+            <div className="settings-role-choice">
+              <button
+                className={
+                  settings.communityRole === "affected" ? "is-selected" : ""
+                }
+                type="button"
+                onClick={() => chooseRole("affected")}
+              >
+                I&apos;m living with it
+              </button>
+              <button
+                className={
+                  settings.communityRole === "caregiver" ? "is-selected" : ""
+                }
+                type="button"
+                onClick={() => chooseRole("caregiver")}
+              >
+                I support someone
+              </button>
+            </div>
+          </fieldset>
           <label>
-            CareTogether ID
+            Be My Light ID
             <input
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
@@ -53,7 +82,7 @@ export default function SettingsPage() {
           <fieldset>
             <legend>Topics I am comfortable sharing</legend>
             <div className="checkbox-grid">
-              {careTopics.map((topic) => (
+              {topicOptions.map((topic) => (
                 <label className="check-option" key={topic}>
                   <input
                     type="checkbox"
@@ -128,7 +157,7 @@ export default function SettingsPage() {
             type="button"
             onClick={() => {
               resetPreview();
-              setDisplayName("hiyoglow");
+              setDisplayName("");
             }}
           >
             <RotateCcw size={17} aria-hidden="true" />

@@ -1,0 +1,4 @@
+azure-functions
+azure-ai-projects==2.0.0b2
+azure-identity>=1.17.1
+openai>=1.75.0

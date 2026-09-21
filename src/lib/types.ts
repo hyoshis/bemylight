@@ -5,14 +5,32 @@ export type TaskCategory =
   | "household"
   | "self-care";
 
+export type CommunityRole = "affected" | "caregiver";
+
 export type CareTask = {
   id: string;
   title: string;
+  detail?: string;
   category: TaskCategory;
   completed: boolean;
   inFocus: boolean;
   dueLabel?: string;
   createdAt: string;
+};
+
+export type SharedTaskList = {
+  id: string;
+  ownerId: string;
+  recipientId: string;
+  sharedAt: string;
+  audience: CommunityRole;
+  seen?: boolean;
+  tasks: {
+    id: string;
+    title: string;
+    detail?: string;
+    completed: boolean;
+  }[];
 };
 
 export type CareComment = {
@@ -27,6 +45,7 @@ export type CarePost = {
   author: string;
   topic: string;
   tags?: string[];
+  audience: CommunityRole;
   body: string;
   createdAt: string;
   reactions: number;
@@ -41,6 +60,7 @@ export type Connection = {
   introduction: string;
   interests: string[];
   sharedTopics: string[];
+  audience: CommunityRole;
   recentPosts: {
     id: string;
     topic: string;
@@ -62,11 +82,13 @@ export type Conversation = {
   person: string;
   subtitle: string;
   unread: number;
+  audience: CommunityRole;
   messages: CareMessage[];
 };
 
 export type CareSettings = {
   displayName: string;
+  communityRole: CommunityRole | null;
   emailReminders: boolean;
   dailyReminderTime: string;
   connectionLocation: "everywhere" | "zipcode";

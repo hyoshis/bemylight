@@ -3,9 +3,15 @@
 import Link from "next/link";
 import { ArrowRight, LockKeyhole, MessageCircleHeart } from "lucide-react";
 import { useCare } from "@/components/care-provider";
+import { filterByAudience, getRoleCopy } from "@/lib/demo-data";
 
 export default function MessagesPage() {
-  const { conversations } = useCare();
+  const { conversations, settings, markConversationRead } = useCare();
+  const copy = getRoleCopy(settings.communityRole);
+  const roleConversations = filterByAudience(
+    conversations,
+    settings.communityRole,
+  );
 
   return (
     <div className="page-stack narrow-page">
@@ -13,12 +19,12 @@ export default function MessagesPage() {
         <div>
           <p className="eyebrow">Private conversations</p>
           <h1>Messages</h1>
-          <p>Only people who both agreed to connect can message each other.</p>
+          <p>{copy.messagesLede}</p>
         </div>
       </header>
 
       <section className="panel conversation-list">
-        {conversations.map((conversation) => {
+        {roleConversations.map((conversation) => {
           const lastMessage =
             conversation.messages[conversation.messages.length - 1];
           return (
@@ -26,6 +32,7 @@ export default function MessagesPage() {
               className="conversation-row"
               href="/messages/conversation-1"
               key={conversation.id}
+              onClick={() => markConversationRead(conversation.id)}
             >
               <span className="avatar connection-avatar">
                 {conversation.person.slice(0, 2)}
@@ -42,11 +49,11 @@ export default function MessagesPage() {
             </Link>
           );
         })}
-        {conversations.length === 0 ? (
+        {roleConversations.length === 0 ? (
           <div className="empty-state">
             <MessageCircleHeart size={30} aria-hidden="true" />
             <h2>No conversations yet</h2>
-            <p>Connect with another caregiver when it feels right.</p>
+            <p>Connect with another community member when it feels right.</p>
           </div>
         ) : null}
       </section>

@@ -9,7 +9,7 @@ export function ServiceWorkerRegistration() {
       navigator.serviceWorker
         .register(`${basePath}/sw.js`)
         .catch((error: unknown) => {
-          console.error("CareTogether service worker registration failed", error);
+          console.error("Be My Light service worker registration failed", error);
         });
     }
   }, []);

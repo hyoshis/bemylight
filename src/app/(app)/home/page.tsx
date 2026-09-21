@@ -6,12 +6,18 @@ import {
   Circle,
   Heart,
   MessageCircle,
+  Mic,
   Plus,
   RefreshCw,
   Sparkles,
   Users,
 } from "lucide-react";
 import { useCare } from "@/components/care-provider";
+import {
+  filterByAudience,
+  getCommunityTopicGroups,
+  getRoleCopy,
+} from "@/lib/demo-data";
 import { getFocusTasks } from "@/lib/task-utils";
 import { cn } from "@/lib/utils";
 
@@ -25,21 +31,30 @@ export default function TodayPage() {
     toggleTask,
     rotateEncouragement,
   } = useCare();
+  const copy = getRoleCopy(settings.communityRole);
   const focusTasks = getFocusTasks(tasks);
-  const connectedCount = connections.filter(
+  const roleConnections = filterByAudience(connections, settings.communityRole);
+  const connectedCount = roleConnections.filter(
     (connection) => connection.status === "connected",
   ).length;
+  const roleTopics = getCommunityTopicGroups(settings.communityRole).flatMap(
+    (group) => [...group.topics],
+  ) as string[];
+  const communityPosts = filterByAudience(
+    posts,
+    settings.communityRole,
+  ).filter((post) => {
+    const postTags = post.tags?.length ? post.tags : [post.topic];
+    return postTags.some((tag) => roleTopics.includes(tag));
+  });
 
   return (
     <div className="page-stack">
       <header className="page-header warm-header">
         <div>
-          <p className="eyebrow">Your day, at a gentler pace</p>
-          <h1>Good evening, {settings.displayName}.</h1>
-          <p>
-            You do not need to solve everything today. Let&apos;s choose what
-            matters now.
-          </p>
+          <p className="eyebrow">{copy.todayEyebrow}</p>
+          <h1>Good evening, {settings.displayName || "friend"}.</h1>
+          <p>{copy.todayLede}</p>
         </div>
         <div className="header-date" aria-label="Thursday, September 17">
           <strong>17</strong>
@@ -47,11 +62,11 @@ export default function TodayPage() {
         </div>
       </header>
 
-      <div className="dashboard-grid">
+      <div className="home-focus-layout">
         <section className="panel focus-panel">
           <div className="section-heading-row">
             <div>
-              <p className="muted-label">What matters now</p>
+              <p className="muted-label">Next priority</p>
               <h2>Your focus</h2>
             </div>
             <span className="progress-pill">{focusTasks.length} focused</span>
@@ -71,16 +86,32 @@ export default function TodayPage() {
                 </span>
                 <span className="task-copy">
                   <strong>{task.title}</strong>
+                  {task.detail ? (
+                    <small className="task-detail">{task.detail}</small>
+                  ) : null}
                   {task.dueLabel ? <small>{task.dueLabel}</small> : null}
                 </span>
               </button>
             ))}
+            {focusTasks.length === 0 ? (
+              <div className="empty-inline">
+                <p>Nothing is starred yet. Choose what matters today.</p>
+              </div>
+            ) : null}
           </div>
 
-          <Link className="button button-secondary button-full" href="/tasks">
-            <Plus size={18} aria-hidden="true" />
-            Add or choose a focus item
-          </Link>
+          <div className="focus-panel-actions">
+            <Link className="button button-primary" href="/tasks">
+              <Mic size={18} aria-hidden="true" />
+              {settings.communityRole === "affected"
+                ? "Say it, hand it off"
+                : "Say it, turn it into tasks"}
+            </Link>
+            <Link className="button button-secondary" href="/tasks">
+              <Plus size={18} aria-hidden="true" />
+              Manage focus
+            </Link>
+          </div>
         </section>
 
         <aside className="panel today-encouragement-panel">
@@ -106,27 +137,33 @@ export default function TodayPage() {
         </aside>
       </div>
 
-      <section className="section-block">
+      <section className="home-community-section">
         <div className="section-heading-row">
           <div>
-            <p className="muted-label">You are not alone</p>
-            <h2>From your circles</h2>
+            <p className="muted-label">From your circles</p>
+            <h2>Community conversations</h2>
           </div>
           <Link className="text-link" href="/community">
-            See community
+            See all posts
           </Link>
         </div>
-        <div className="community-preview-grid">
-          {posts.slice(0, 2).map((post) => (
-            <article className="post-card compact-post" key={post.id}>
+
+        <div className="home-post-feed">
+          {communityPosts.slice(0, 4).map((post) => (
+            <article className="post-card home-post-card" key={post.id}>
               <div className="post-meta">
                 <span className="avatar">{post.author.slice(0, 2)}</span>
                 <div>
                   <strong>{post.author}</strong>
-                  <small>
-                    {post.topic} · {post.createdAt}
-                  </small>
+                  <small>{post.createdAt}</small>
                 </div>
+              </div>
+              <div className="post-tag-row">
+                {(post.tags?.length ? post.tags : [post.topic]).map((tag) => (
+                  <span className="soft-tag" key={tag}>
+                    {tag}
+                  </span>
+                ))}
               </div>
               <p>{post.body}</p>
               <div className="post-stats">
@@ -145,15 +182,16 @@ export default function TodayPage() {
 
       <section className="connection-callout">
         <div className="connection-avatars" aria-hidden="true">
-          <span>N2</span>
-          <span>KJ</span>
-          <span>M8</span>
+          {roleConnections.slice(0, 3).map((connection) => (
+            <span key={connection.id}>{connection.name.slice(0, 2)}</span>
+          ))}
         </div>
         <div>
-          <h2>Care feels lighter when it is shared.</h2>
+          <h2>{copy.connectionCalloutTitle}</h2>
           <p>
-            You have {connectedCount} connection and new people with experiences
-            similar to yours.
+            You have {connectedCount}{" "}
+            {connectedCount === 1 ? "connection" : "connections"} here, plus{" "}
+            {copy.connectionCalloutBody}
           </p>
         </div>
         <Link className="button button-primary" href="/connections">
