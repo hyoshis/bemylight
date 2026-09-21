@@ -42,12 +42,12 @@ is at [http://localhost:3000/home](http://localhost:3000/home).
 
 The static site is published from the `gh-pages` branch:
 
-[https://hyoshis.github.io/caretogether/](https://hyoshis.github.io/caretogether/)
+[https://hyoshis.github.io/bemylight/](https://hyoshis.github.io/bemylight/)
 
 Build and publish with:
 
 ```powershell
-$env:GITHUB_ACTIONS="true"; $env:GITHUB_REPOSITORY="hyoshis/caretogether"; npm run build
+$env:GITHUB_ACTIONS="true"; $env:GITHUB_REPOSITORY="hyoshis/bemylight"; npm run build
 ```
 
 Then copy the contents of `out/` to the `gh-pages` branch root, keeping the

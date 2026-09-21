@@ -1,4 +1,4 @@
-const CACHE_NAME = "caretogether-shell-v1";
+const CACHE_NAME = "bemylight-shell-v1";
 const scopePath = new URL(self.registration.scope).pathname.replace(/\/$/, "");
 const STATIC_ASSETS = [
   `${scopePath}/`,
